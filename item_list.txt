@@ -1,0 +1,42 @@
+#light has more power/agility, moderate vitality, less toughness
+Cotton Gloves, light, I, , hands, 1, power:3, agility:3, vitality:2, toughness:1
+Cotton Boots, light, I, , feet, 1, power:3, agility:3, vitality:2, toughness:1
+Cotton Hood, light, I, , head, 1, power:4, agility:4, vitality:3, toughness:1
+Cotton Robe, light, I, , chest, 1, power:4, agility:4, vitality:3, toughness:1
+Cotton Pants, light, I, , legs, 1, power:4, agility:4, vitality:3, toughness:1
+
+#medium has much more agility, moderate vitality, less power/toughness
+Leather Gloves, medium, P, , hands, 1, power:1, agility:5, vitality:2, toughness:1
+Leather Boots, medium, P, , feet, 1, power:1, agility:5, vitality:2, toughness:1
+Leather Hood, medium, P, , head, 1, power:1, agility:6, vitality:3, toughness:1
+Leather Armor, medium, P, , chest, 1, power:1, agility:6, vitality:3, toughness:1
+Leather Leggings, medium, P, , legs, 1, power:1, agility:6, vitality:3, toughness:1
+
+#heavy has more vitality, moderate toughness/power, less agility
+Steel Gauntlets, heavy, O, , hands, 1, power:2, agility:1, vitality:3, toughness:3
+Steel Boots, heavy, O, , feet, 1, power:2, agility:1, vitality:3, toughness:3
+Steel Helmet, heavy, O, , head, 1, power:3, agility:1, vitality:4, toughness:4
+Steel Armor, heavy, O, , chest, 1, power:3, agility:1, vitality:4, toughness:4
+Steel Leggings, heavy, O, , legs, 1, power:3, agility:1, vitality:4, toughness:4
+
+Red Amulet, necklace, Z, , neck, 1, power:2, agility:2
+Blue Amulet, necklace, Z, , neck, 1, vitality:2, toughness:2
+Wedding Necklace, necklace, Z, , neck, 1, power:1, agility:1, vitality:1, toughness:1
+
+Iron Great Sword, sword, I, , 2hand, 1, power:10, agility:4
+Iron Spear, spear, I, , 2hand, 1, power:10, vitality:4
+
+Iron Sword, sword, I, , 1hand, 1, power:5, agility:2
+Iron Shield, shield, I, , 1hand, 1, vitality:2, toughness:5
+
+Single Shot Rifle, gun, O, , 2hand, 1, power:10, agility:4
+Maple Bow, bow, P, , 2hand, 1, power:10, vitality:2, agility:2
+Maple Crossbow, bow, P, , 2hand, 1, power:10, vitality:4
+
+Single Shot Pistol, gun, O, , 1hand, 1, power:5, agility:2
+
+Iron Dagger, dagger, I, , 1hand, 1, power:1, agility:6
+
+Maple Staff, staff, I, , 2hand, 1, power:10, vitality:4
+
+Maple Wand, wand, I, , 1hand, 1, power:6, agility:1

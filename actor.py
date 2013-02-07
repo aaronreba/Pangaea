@@ -1,0 +1,384 @@
+#!/usr/bin/env python
+
+from __future__ import division
+
+from random import randint
+
+import pygame
+from math import sqrt
+from math import ceil
+
+import common
+
+MS_PER_FRAME = 1000
+
+class actor():
+    def __init__(self, name, actor_type, owner, owner_type):
+        #name: name of actor
+        #actor_type: 'dog, 'cat', etc...
+        #owner: name of player
+        #owner_type: 'human', 'computer'
+        
+        self.name = name
+        self.actor_type = actor_type
+        self.owner = owner
+        self.owner_type = owner_type
+        
+        self.position = None #position on map
+        
+        #########
+        # stats #
+        #########
+        
+        self.stats = {}
+        
+        #4 base stats:
+        #offense
+        #health
+        #whatever the fuck agility does (crit?)
+        #defense
+        self.stats['power']     = 10
+        self.stats['agility']   = 10
+        self.stats['vitality']  = 10
+        self.stats['toughness'] = 10
+        
+        self.stats['health'] = 70
+        self.stats['mana']   = 30
+        
+        #lucky stats
+        self.stats['evasion'] = 0
+        self.stats['crit']    = 0
+        
+        #speed is how often actor moves
+        self.speed = 100
+        self.speed_time = None
+        
+        #########
+        # items #
+        #########
+        
+        self.inventory = []
+        self.gold = 0
+        
+        #keep equipment simple
+        self.equipment = {}
+        
+        self.equipment['left_hand']  = None
+        self.equipment['right_hand'] = None
+        
+        self.equipment['head']  = None
+        self.equipment['chest'] = None
+        self.equipment['legs']  = None
+        self.equipment['hands'] = None
+        self.equipment['feet']  = None
+        
+        self.equipment['neck'] = None
+        
+        ##########
+        # skills #
+        ##########
+        
+        self.skills = {}
+        
+        ###################
+        # view attributes #
+        ###################
+        
+        self.destination = None
+        
+        #the path the actor will take to get to the destination
+        self.current_path = []
+        
+        # #chains hold frames
+        # #an entry is like so:
+        # #image_chains[act] = [image, ]
+        # self.image_chains = None
+        
+        # self.rect = None #inherited from Sprite, position on screen
+        # self.image = None #inherited from Sprite
+        
+        # self.decimal_rect = None
+        
+        # self.visible = False
+        
+        #this is for the view displaying something walking
+        # self.walking_speed = 160 #value in pixels
+        # self.walking_destination = (0, 0)
+        # self.walking_vector = (0, 0)
+        
+        #tuple of (True, False). True = positive direction, False = negative
+        # self.walking_direction_boolean = None
+    
+    def __str__(self):
+        inventory_string = ' '.join([x.name for x in self.inventory])
+        equipment_string = ''
+        for equipment in self.equipment:
+            if self.equipment[equipment] == None:
+                equipment_string += 'None '
+            else:
+                equipment_string += self.equipment[equipment].name + ' '
+        
+        return\
+'health: {0}, mana: {1}\n\
+power: {2}, toughness: {3}, agility: {4}, vitality: {5}\n\
+inventory: {6}\n\
+equipment: {7}'.format(
+            self.stats['health'],
+            self.stats['mana'],
+            self.stats['power'],
+            self.stats['toughness'],
+            self.stats['agility'],
+            self.stats['vitality'],
+            inventory_string,
+            equipment_string)
+    
+    def equip_item(self, item):
+        #return_item is a list of whatever items that were
+        #removed in order to equip the given item
+        return_items = [None]
+        if item.location == '1hand':
+            if self.equipment['right_hand'] == None:
+                self.equipment['right_hand'] = item
+            
+            elif self.equipment['right_hand'].location == '2hand':
+                return_items = [self.unequip_item_at_location['right_hand']]
+                self.equipment['right_hand'] = item
+            
+            elif self.equipment['left_hand'] == None:
+                self.equipment['left_hand'] = item
+            
+            else:
+                return_items = [self.unequip_item_at_location['right_hand']]
+                self.equipment['right_hand'] = item
+        
+        elif item.location == '2hand':
+            return_items = [self.unequip_item_at_location('right_hand'),
+                            self.unequip_item_at_location('left_hand')]
+            
+            self.equipment['right_hand'] = item
+        
+        else:
+            return_items = [self.unequip_item_at_location(item.location)]
+            
+            self.equipment[item.location] = item
+        
+        for stat in item.stats:
+            self.stats[stat] += item.stats[stat]
+        
+        self.recalculate_health()
+        
+        for return_item in return_items:
+            self.add_item(return_item)
+    
+    def unequip_item(self, item):
+        self.equipment[item.location] = None
+        
+        for stat in item.stats:
+            self.stats[stat] -= item.stats[stat]
+        
+        self.recalculate_health()
+        
+        return item
+    
+    def unequip_item_at_location(self, location):
+        location_item = self.equipment[location]
+        if location_item != None:
+            self.unequip_item(location_item)
+            for stat in location_item.stats:
+                self.stats[stat] -= location_item.stats[stat]
+            
+            self.recalculate_health()
+        return location_item
+    
+    def has_item_at_location(self, location):
+        return self.equipment[location] == None
+    
+    def add_item(self, item):
+        if item != None and len(self.inventory) < 30:
+            self.inventory.append(item)
+    
+    def remove_item(self, item):
+        if item in self.inventory:
+            self.inventory.remove(item)
+    
+    def recalculate_health(self):
+        self.stats['health'] = self.stats['vitality'] * 7
+    
+    def add_gold(self, gold):
+        self.gold += gold
+    
+    def remove_gold(self, gold):
+        self.gold -= gold
+    
+    # def initialize_sprite(self, group):
+    #     pygame.sprite.Sprite.__init__(self, group)
+    
+    # def initialize_animation(self, image_chains):
+    #     self.image_chains = image_chains
+    #     self.current_act = 'stand'
+    #     self.current_act_animation_index = 0
+    #     self.current_act_frame_index = 0
+    #     self.current_act_frame = self.image_chains['stand'][0][0]
+    #     self.current_act_number_of_animations = len(self.image_chains['stand'])
+    #     self.current_act_animation_length = len(self.image_chains['stand'][0])
+    #     self.current_act_time = 0
+    #     self.current_act_alotted_time = MS_PER_FRAME
+    
+    # def change_act(self, new_act):
+    #     action_list = ['stand', 'walk']
+    #     action_list.index(new_act)
+        
+    #     if self.current_act == new_act:
+    #         return
+        
+        
+    #     old_act = self.current_act
+        
+    #     self.current_act = new_act
+    #     self.current_act_animation_index = 0
+    #     self.current_act_frame_index = 0
+    #     self.current_act_frame = self.image_chains[new_act][0][0]
+    #     self.current_act_number_of_animations = len(self.image_chains[new_act])
+    #     self.current_act_animation_length = len(self.image_chains[new_act][0])
+    #     self.current_act_time = 0
+    #     self.current_act_alotted_time = MS_PER_FRAME
+        
+    #     if new_act == 'walk':
+    #         self.decimal_rect = [0, 0]
+        
+    
+    # def set_walk(self, newx=None, newy=None):
+    #     x = self.x
+    #     y = self.y
+        
+    #     if newx == None and newy == None:
+    #         current_actor_pos = (self.rect.left, self.rect.top)
+    #         new_actor_pos = common.screen_coords_from_map(x, y)
+    #     else:
+    #         current_actor_pos = common.screen_coords_from_map(x, y)
+    #         new_actor_pos = common.screen_coords_from_map(newx, newy)
+            
+        
+    #     move_x = new_actor_pos[0] - current_actor_pos[0]
+    #     move_y = new_actor_pos[1] - current_actor_pos[1]
+        
+    #     self.walking_destination = new_actor_pos
+    #     self.walking_destination = (int(self.walking_destination[0]),
+    #                                 int(self.walking_destination[1]))
+        
+    #     self.walking_vector = common.vector_to_pos(current_actor_pos,
+    #                                                new_actor_pos,
+    #                                                self.walking_speed)
+        
+    #     if self.walking_vector[0] > 0:
+    #         bx = True
+    #     else:
+    #         bx = False
+    #     if self.walking_vector[1] > 0:
+    #         by = True
+    #     else:
+    #         by = False
+        
+    #     self.walking_direction_boolean = (bx, by)
+    
+    def set_location(self, (x, y)):
+        self.position = (x, y)
+        
+    def add_destination(self, x, y):
+        self.destination = (x, y)
+    
+    #def load_images(self, images):
+    #    #if image set is not loaded yet, load it
+    #    if self.actor_type not in images.images:
+    #        images.images.load_images(self.actor_type)
+    #    
+    #    #image set is now loaded whether or not it was found.
+    #    #now reference it.
+    #    self.image_chains = images.images[self.actor_type]
+    #deprecated: now handled by model
+    
+    # def update_chain(self, double dt):
+    #     #todo: this may be INCREDIBLY slow later on with many actors
+        
+    #     self.current_act_time += dt
+    #     #using while loop in case of skipped frames
+        
+    #     #do... add dt to current act time, if it passes the time of the frame,
+    #     #increment or loop around index, change frame, and set frame chain
+        
+    #     while self.current_act_time >= self.current_act_alotted_time:
+    #         self.current_act_time -= self.current_act_alotted_time
+    #         self.current_act_frame_index += 1
+    #         if self.current_act_frame_index == self.current_act_animation_length:
+    #             self.current_act_animation_index = randint(0, self.current_act_number_of_animations - 1)
+    #             self.current_act_frame_index = 0
+    #     self.image = self.image_chains[self.current_act][self.current_act_animation_index][self.current_act_frame_index]
+        
+    #     if self.current_act == 'walk':
+    #         self.update_walk(dt)
+    
+    # def update_walk(self, double dt):
+    #     dt *= .001
+        
+    #     cdef double vx = self.walking_vector[0]
+    #     cdef double vy = self.walking_vector[1]
+        
+    #     cdef double destx = self.walking_destination[0]
+    #     cdef double desty = self.walking_destination[1]
+        
+    #     bx = self.walking_direction_boolean[0]
+    #     by = self.walking_direction_boolean[1]
+        
+    #     cdef double movex = vx * dt
+    #     cdef double movey = vy * dt
+        
+    #     self.decimal_rect[0] += movex
+    #     self.decimal_rect[1] += movey
+        
+    #     cdef int int_decimal_rect_x
+    #     cdef int int_decimal_rect_y
+        
+    #     if bx:
+    #         int_decimal_rect_x = int(self.decimal_rect[0])
+    #     else:
+    #         int_decimal_rect_x = ceil(self.decimal_rect[0])
+        
+    #     if by:
+    #         int_decimal_rect_y = int(self.decimal_rect[1])
+    #     else:
+    #         int_decimal_rect_y = ceil(self.decimal_rect[1])
+        
+    #     self.decimal_rect[0] -= int_decimal_rect_x
+    #     self.decimal_rect[1] -= int_decimal_rect_y
+        
+    #     self.rect.move_ip(int_decimal_rect_x,
+    #                       int_decimal_rect_y)
+        
+    #     cdef int rectx = self.rect[0]
+    #     cdef int recty = self.rect[1]
+        
+    #     recalculate = False
+        
+    #     if bx:
+    #         if rectx > destx:
+    #             self.rect.left = destx
+    #             recalculate = True
+    #     else:
+    #         if rectx < destx:
+    #             self.rect.left = destx
+    #             recalculate = True
+        
+    #     if by:
+    #         if recty > desty:
+    #             self.rect.top = desty
+    #             recalculate = True
+    #     else:
+    #         if recty < desty:
+    #             self.rect.top = desty
+    #             recalculate = True
+        
+    #     if self.rect.left == destx and self.rect.top == desty:
+    #         self.change_act('stand')
+    #     elif recalculate:
+    #         self.set_walk()
+    

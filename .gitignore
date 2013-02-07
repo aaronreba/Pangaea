@@ -1,0 +1,7 @@
+*.pyc
+*.pyd
+*.c
+build/*
+*sublime-project
+*sublime-workspace
+*swp
