@@ -1,23 +1,29 @@
 import random
 
+#map values:
+#(
+#('type', temp, precip, ??),
+#[walkable, empty, see-through, interactable],
+#[items],
+#[images in order of layering]
+#)
+
 ##########
 # to do: #
 ##########
 
-#integrate random gened items
 #add random structures (towns, shrines, fountains, temples, etc)
-#take track of when human goes out of range, delete old terrain
 
 #########
 
 #all chunks within this many distance units from the human must be
 #generated whenever a generation is requested
 #testing: 30 chunks
-do_chunk_generate_distance = 1
+do_chunk_generate_distance = 2
 
 #when a deletion is requested, chunks within this many distance units
 #from the human must be deleted
-do_chunk_delete_distance = 1
+do_chunk_delete_distance = 2
 
 #a generation is requested when the human is within this many
 #chunks from the edge of the world.
@@ -25,7 +31,7 @@ do_chunk_delete_distance = 1
 #another check for land is made. if that request can be carried out,
 #it will.
 #testing: 12 chunks
-check_chunk_generate_distance = 1
+check_chunk_generate_distance = 2
 
 chunk_size = 5
 
@@ -47,6 +53,8 @@ class landscape(object):
         self.landscape = {}
         self.landscape_chunk_mask = {}
         self.landscape_size = None
+        
+        self.cities = []
     
     def __str__(self):
         print_me = ''
@@ -54,7 +62,12 @@ class landscape(object):
             if k & 1 == 1:
                 print_me += ' '
             for x in xrange(self.landscape_size[0][0], self.landscape_size[0][1]):
-                if (x, y) in self.landscape:
+                chunk_location = (int(x / chunk_size), int(y / chunk_size))
+                if self.location_has_building((x, y)):
+                    print_me += 'b '
+                elif self.chunk_in_city_bounds((chunk_location)):
+                    print_me += 'c '
+                elif (x, y) in self.landscape:
                     print_me += str(self.landscape[x, y][1][1])[0] + ' '
                 else:
                     print_me += '  '
@@ -65,6 +78,96 @@ class landscape(object):
     def __repr__(self):
         return self.landscape.__str__()
     
+    def chunk_in_city_bounds(self, this_chunk):
+        for this_city in self.cities:
+            if this_chunk in this_city.chunk_locations:
+                return True
+        return False
+    
+    def location_has_building(self, this_location):
+        this_chunk = (int(this_location[0] / chunk_size), int(this_location[1] / chunk_size))
+        for this_city in self.cities:
+            if this_chunk in this_city.chunk_locations:
+                for this_building in this_city.buildings:
+                    if this_building.location == this_location:
+                        return True
+        return False
+
+#each city has 3-4 (or more?) chunks designated to its boundaries.
+#its building placements are stored. its terrain is not stored.
+#building types: civilian (questing), item shop, trainers (each city has 
+#1-2 trainer types for skills (fighting/blocking/healing))
+class city(object):
+    def __init__(self, chunk_locations):
+        #chunk_location is in format: ((x, y), (x, y), (x, y)...)
+        self.chunk_locations = chunk_locations
+        self.buildings = []
+
+building_type_list = ['civilian', 'item', 'instructor']
+class building(object):
+    def __init__(self, location):
+        self.civilian_list = []
+        self.item_list = []
+        self.instructor_list = []
+        
+        self.this_type = None
+        
+        self.location = location
+    
+    def populate(self, this_type=None):
+        #if this_type is None, a random city actor type is given.
+        #else, it will use that type
+        if this_type == None:
+            building_type = building_type_list[random.randint(0, 2)]
+        else:
+            building_type = this_type
+
+def make_terrain_test(scheme):
+    #10x15 map
+    if scheme == 'basic_grass':
+        this_landscape = landscape()
+        for x in xrange(10):
+            for y in xrange(15):
+                this_landscape.landscape[x, y] = (('grass', 0, 0, 0), [True, True, True, False], [], [])
+        for x in xrange(2):
+            for y in xrange(3):
+                this_landscape.landscape_chunk_mask[x, y] = (0, 0, 0)
+        this_landscape.landscape_size = ((0, 10), (0, 15))
+        
+        #generate 2 cities: in range, and out of range
+        add_this_city = city(((1, 1), (2, 1), (1, 2), (2, 2)))
+        
+        add_this_building = building((5, 5))
+        add_this_building.populate('civilian')
+        add_this_city.buildings.append(add_this_building)
+        
+        add_this_building = building((6, 5))
+        add_this_building.populate('item')
+        add_this_city.buildings.append(add_this_building)
+        
+        add_this_building = building((7, 5))
+        add_this_building.populate('instructor')
+        add_this_city.buildings.append(add_this_building)
+        
+        this_landscape.cities.append(add_this_city)
+        
+        add_this_city = city(((-4, 1), (-4, 0), (-5, 1), (-5, 0)))
+        
+        add_this_building = building((-20, 0))
+        add_this_building.populate('civilian')
+        add_this_city.buildings.append(add_this_building)
+        
+        add_this_building = building((-19, 0))
+        add_this_building.populate('item')
+        add_this_city.buildings.append(add_this_building)
+        
+        add_this_building = building((-18, 0))
+        add_this_building.populate('instructor')
+        add_this_city.buildings.append(add_this_building)
+        
+        this_landscape.cities.append(add_this_city)
+        
+        return this_landscape
 
 #get ungenerated in given distance
 def find_immediate_ungenerated(
@@ -299,6 +402,13 @@ def generate_chunk(
                     tile_type = biome_graph[biome]
                     break
             #map values:
-            #(('type', temp, precip, ??), [walkable, empty, see-through], items)
-            this_landscape.landscape[x, y] = ((tile_type, new_tile[0], new_tile[1], new_tile[2]), [True, True, True], [])
+            #(
+            #('type', temp, precip, ??),
+            #[walkable, empty, see-through, interactable],
+            #[items],
+            #[images in order of layering]
+            #)
+            this_landscape.landscape[x, y] = ((tile_type, new_tile[0], new_tile[1], new_tile[2]), [True, True, True, False], [], [])
+    
+    #post processing to add land features (cities, doodads, etc)
     

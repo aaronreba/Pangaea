@@ -251,6 +251,7 @@ class model(object):
         return moved
     
     def ai_action(self):
+        #how unpythonic!
         if self.move_actor(9):
             pass
         elif self.move_actor(3):
@@ -287,6 +288,8 @@ class model(object):
         return self.landscape.landscape[locs][1][1] == True
     def is_location_seethrough(self, locs):
         return self.landscape.landscape[locs][1][2] == True
+    def is_location_interactable(self, locs):
+        return self.landscape.landscape[locs][1][3] == True
     
     #################
     # updating view #

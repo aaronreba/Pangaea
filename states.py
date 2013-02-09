@@ -10,7 +10,7 @@ import game_controller
 import game_model
 import game_view
 
-import terrain_sets
+import terraform
 
 class states(object):
     def __init__(self, screen):
@@ -45,7 +45,7 @@ class states(object):
             self.controller = game_controller_test.controller(self.model, pygame.event)
             # self.view.model = self.model
             
-            self.model.landscape = terrain_sets.make_terrain_test('basic_grass')
+            self.model.landscape = terraform.make_terrain_test('basic_grass')
             
             # self.view.draw_map()
     
