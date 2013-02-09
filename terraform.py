@@ -49,12 +49,17 @@ biome_graph[(2, 4),   (0, 2)]   = 'grass'
 biome_graph[(2, 4),   (3, 4)]   = 'jungle'
 
 class landscape(object):
-    def __init__(self):
+    def __init__(self, level):
         self.landscape = {}
         self.landscape_chunk_mask = {}
         self.landscape_size = None
         
         self.cities = []
+        
+        self.portals = []
+        self.level = level
+        #traversed_location is where the player entered a portal
+        self.traversed_location = None
     
     def __str__(self):
         print_me = ''
@@ -63,7 +68,9 @@ class landscape(object):
                 print_me += ' '
             for x in xrange(self.landscape_size[0][0], self.landscape_size[0][1]):
                 chunk_location = (int(x / chunk_size), int(y / chunk_size))
-                if self.location_has_building((x, y)):
+                if self.get_portal_direction_at_location((x, y)) != None:
+                    print_me += self.get_portal_direction_at_location((x, y))[0] + ' '
+                elif self.location_has_building((x, y)):
                     print_me += 'b '
                 elif self.chunk_in_city_bounds((chunk_location)):
                     print_me += 'c '
@@ -77,6 +84,15 @@ class landscape(object):
     
     def __repr__(self):
         return self.landscape.__str__()
+    
+    def is_location_walkable(self, locs):
+        return self.landscape[locs][1][0] == True
+    def is_location_empty(self, locs):
+        return self.landscape[locs][1][1] == True
+    def is_location_seethrough(self, locs):
+        return self.landscape[locs][1][2] == True
+    def is_location_interactable(self, locs):
+        return self.landscape[locs][1][3] == True
     
     def chunk_in_city_bounds(self, this_chunk):
         for this_city in self.cities:
@@ -92,6 +108,12 @@ class landscape(object):
                     if this_building.location == this_location:
                         return True
         return False
+    
+    def get_portal_direction_at_location(self, location):
+        for this_portal in self.portals:
+            if this_portal.location == location:
+                return this_portal.direction
+        return None
 
 #each city has 3-4 (or more?) chunks designated to its boundaries.
 #its building placements are stored. its terrain is not stored.
@@ -122,10 +144,15 @@ class building(object):
         else:
             building_type = this_type
 
+class portal(object):
+    def __init__(self, location, direction):
+        self.location = location
+        self.direction = direction
+
 def make_terrain_test(scheme):
     #10x15 map
     if scheme == 'basic_grass':
-        this_landscape = landscape()
+        this_landscape = landscape(1)
         for x in xrange(10):
             for y in xrange(15):
                 this_landscape.landscape[x, y] = (('grass', 0, 0, 0), [True, True, True, False], [], [])
@@ -167,7 +194,43 @@ def make_terrain_test(scheme):
         
         this_landscape.cities.append(add_this_city)
         
+        add_this_portal = portal((2, 2), 'up')
+        this_landscape.portals.append(add_this_portal)
+        
         return this_landscape
+    
+    elif scheme == '2_grass':
+        this_landscape = landscape(2)
+        for x in xrange(5):
+            for y in xrange(5):
+                this_landscape.landscape[x, y] = (('grass', 0, 0, 0), [True, True, True, False], [], [])
+        for x in xrange(1):
+            for y in xrange(1):
+                this_landscape.landscape_chunk_mask[x, y] = (0, 0, 0)
+        this_landscape.landscape_size = ((0, 5), (0, 5))
+        
+        add_this_portal = portal((2, 2), 'up')
+        this_landscape.portals.append(add_this_portal)
+        add_this_portal = portal((3, 3), 'down')
+        this_landscape.portals.append(add_this_portal)
+        
+        return this_landscape
+    
+    elif scheme == '3_grass':
+        this_landscape = landscape(3)
+        for x in xrange(5):
+            for y in xrange(5):
+                this_landscape.landscape[x, y] = (('grass', 0, 0, 0), [True, True, True, False], [], [])
+        for x in xrange(1):
+            for y in xrange(1):
+                this_landscape.landscape_chunk_mask[x, y] = (0, 0, 0)
+        this_landscape.landscape_size = ((0, 5), (0, 5))
+        
+        add_this_portal = portal((3, 3), 'down')
+        this_landscape.portals.append(add_this_portal)
+        
+        return this_landscape
+    
 
 #get ungenerated in given distance
 def find_immediate_ungenerated(

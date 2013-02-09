@@ -55,6 +55,9 @@ class controller(object):
                     if unequip_me != None:
                         self.model.current_actor.add_item(unequip_me)
                 
+                elif event.key == K_m:
+                    self.model.traverse_portal()
+                
                 #move actor
                 elif event.key in self.direction_key_map:
                     if self.model.current_actor != None:

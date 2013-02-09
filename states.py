@@ -46,6 +46,7 @@ class states(object):
             # self.view.model = self.model
             
             self.model.landscape = terraform.make_terrain_test('basic_grass')
+            self.model.landscapes.append(self.model.landscape)
             
             # self.view.draw_map()
     

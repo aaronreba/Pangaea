@@ -5,6 +5,7 @@ import common
 import item
 import player
 import terraform
+import copy
 
 class model(object):
     def __init__(self):
@@ -13,8 +14,6 @@ class model(object):
         
         self.players = []
         self.actors = []
-        
-        self.landscape = None
         
         #current_actor is the actor who currently can act
         self.current_actor = None
@@ -27,8 +26,11 @@ class model(object):
         
         self.human_actor = None
         
-        self.level = None
-    
+        self.level = 1
+        
+        self.landscape = None
+        self.stored_levels = []
+        
     #############
     # true init #
     #############
@@ -55,13 +57,38 @@ class model(object):
         
         self.extend_map_from_actor(self.human_actor)
         
-        self.level = 1
         self.item_levels = [1, 2]
         
         self.generate_items()
         
         self.initialized = True
     
+    #########################
+    # level storing/loading #
+    #########################
+    
+    class level(object):
+        def __init__(self):
+            self.landscape = None
+            self.actors = None
+            self.human_actor_info = None
+    
+    def store_level(self):
+        this_level = level()
+        this_level.landscape = copy.deepcopy(self.landscape)
+        this_level.actors = copy.deepcopy(self.actors)
+        #remove human actor from actors
+        this_level.actors.remove(self.human_actor)
+        this_level.human_actor_info = {}
+        this_level.human_actor_info['speed_time'] = self.human_actor.speed_time
+        return this_level
+    
+    def load_level(self, number):
+        next_level = self.stored_levels[number]
+        self.landscape = next_level.landscape
+        self.actors = next_level.actors
+        self.human_actor.speed_time = next_level.human_actor_info['speed_time']
+        self.recalculate_speed()
     
     ###################
     # string displays #
@@ -94,7 +121,7 @@ class model(object):
     
     def generate_items(self):
         for x, y in self.landscape.landscape:
-            if self.is_location_walkable((x, y)):
+            if self.landscape(is_location_walkable((x, y))):
                 random_item = item.generate_random_with_chance(self.item_levels)
                 if random_item != None:
                     self.landscape.landscape[x, y][2].append(random_item)
@@ -149,21 +176,24 @@ class model(object):
         self.actors.append(new_actor)
         
         if self.initialized:
-            for each_actor in self.actors[:-1]:
-                each_actor.speed_time = float(each_actor.speed_time) / self.speed_lcm
-            
-            #scale old actor's speed times to new speed lcm
-            self.speed_lcm = common.lcmm([each_actor.speed\
-                                          for each_actor\
-                                          in self.actors])
-            for each_actor in self.actors[:-1]:
-                each_actor.speed_time = int(each_actor.speed_time * self.speed_lcm)
-            
-            new_actor.speed_time = self.speed_lcm / new_actor.speed
+            self.recalculate_speed()
     
     def remove_actor(self, remove_me):
         if remove_me in self.actors:
             self.actors.remove(remove_me)
+    
+    def recalculate_speed(self):
+        for each_actor in self.actors[:-1]:
+            each_actor.speed_time = float(each_actor.speed_time) / self.speed_lcm
+        
+        #scale old actor's speed times to new speed lcm
+        self.speed_lcm = common.lcmm([each_actor.speed\
+                                      for each_actor\
+                                      in self.actors])
+        for each_actor in self.actors[:-1]:
+            each_actor.speed_time = int(each_actor.speed_time * self.speed_lcm)
+        
+        new_actor.speed_time = self.speed_lcm / new_actor.speed
     
     ##########################
     # modifying player/actor #
@@ -282,14 +312,44 @@ class model(object):
             self.landscape,
             retract_from_me.position)
     
-    def is_location_walkable(self, locs):
-        return self.landscape.landscape[locs][1][0] == True
-    def is_location_empty(self, locs):
-        return self.landscape.landscape[locs][1][1] == True
-    def is_location_seethrough(self, locs):
-        return self.landscape.landscape[locs][1][2] == True
-    def is_location_interactable(self, locs):
-        return self.landscape.landscape[locs][1][3] == True
+    def traverse_portal(self):
+        direction = self.landscape.get_portal_direction_at_location(self.human_actor.position)
+        if direction == None:
+            return False
+        
+        self.landscape.traversed_location = self.human_actor.position
+        
+        if direction == 'up':
+            if self.level - 1 == len(self.stored_levels):
+                #store old
+                self.stored_levels.append(self.store_level())
+                
+                self.level += 1
+                
+                #generate new level
+                self.landscape = terraform.landscape(self.level)
+            else:
+                #store current level over old level
+                self.stored_levels.pop(self.level - 1)
+                this_level = store_level()
+                self.stored_levels.insert(self.level - 1, this_level)
+                
+                self.level += 1
+                
+                #load old level
+                self.load_level(self.level)
+        elif direction == 'down':
+            #store current level over old level
+            self.stored_levels.pop(self.level - 1)
+            
+            this_level = store_level()
+            self.stored_levels.insert(self.level - 1, this_level)
+            
+            self.level -= 1
+            
+            self.load_level(self.level)
+        
+        return True
     
     #################
     # updating view #
