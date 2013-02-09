@@ -45,10 +45,7 @@ class states(object):
             self.controller = game_controller_test.controller(self.model, pygame.event)
             # self.view.model = self.model
             
-            self.model.game_map,\
-                self.model.game_map_chunk_mask,\
-                self.model.game_map_size =\
-                terrain_sets.make_terrain_test('basic_grass')
+            self.model.landscape = terrain_sets.make_terrain_test('basic_grass')
             
             # self.view.draw_map()
     

@@ -13,7 +13,11 @@ import random
 #all chunks within this many distance units from the human must be
 #generated whenever a generation is requested
 #testing: 30 chunks
-do_chunk_generate_distance = 2
+do_chunk_generate_distance = 1
+
+#when a deletion is requested, chunks within this many distance units
+#from the human must be deleted
+do_chunk_delete_distance = 1
 
 #a generation is requested when the human is within this many
 #chunks from the edge of the world.
@@ -21,7 +25,7 @@ do_chunk_generate_distance = 2
 #another check for land is made. if that request can be carried out,
 #it will.
 #testing: 12 chunks
-check_chunk_generate_distance = 2
+check_chunk_generate_distance = 1
 
 chunk_size = 5
 
@@ -38,11 +42,33 @@ biome_graph[(2, 4),   (-4, -1)] = 'desert'
 biome_graph[(2, 4),   (0, 2)]   = 'grass'
 biome_graph[(2, 4),   (3, 4)]   = 'jungle'
 
+class landscape(object):
+    def __init__(self):
+        self.landscape = {}
+        self.landscape_chunk_mask = {}
+        self.landscape_size = None
+    
+    def __str__(self):
+        print_me = ''
+        for k, y in enumerate(xrange(self.landscape_size[1][0], self.landscape_size[1][1])):
+            if k & 1 == 1:
+                print_me += ' '
+            for x in xrange(self.landscape_size[0][0], self.landscape_size[0][1]):
+                if (x, y) in self.landscape:
+                    print_me += str(self.landscape[x, y][1][1])[0] + ' '
+                else:
+                    print_me += '  '
+            print_me += '\n'
+        print_me += '\n'
+        return print_me
+    
+    def __repr__(self):
+        return self.landscape.__str__()
+    
 
 #get ungenerated in given distance
 def find_immediate_ungenerated(
-    game_map,
-    game_map_chunk_mask,
+    this_landscape,
     center_position,
     given_distance):
     
@@ -58,7 +84,7 @@ def find_immediate_ungenerated(
     pos_y = center_chunk_position[1] + given_distance
     
     #determine generated
-    generated_chunks = set(game_map_chunk_mask.keys())
+    generated_chunks = set(this_landscape.landscape_chunk_mask.keys())
     
     all_check_chunks = set()
     for x in xrange(neg_x, pos_x + 1):
@@ -73,10 +99,8 @@ def find_immediate_ungenerated(
 #ignorant of checking, assumes that terrain must be generated.
 #assumes ungenerated_chunks are all the ungenerated_chunks to be generated
 def extend_map_using_ungenerated(
-    game_map,
-    game_map_chunk_mask,
+    this_landscape,
     ungenerated_chunks):
-    
     ##################################
     # determine shape of ungenerated #
     ##################################
@@ -100,15 +124,14 @@ def extend_map_using_ungenerated(
                                           (ungenerated_chunk[0] + 1, ungenerated_chunk[1])])
             bordering = 0
             for border_chunk in border_chunk_positions:
-                if border_chunk in game_map_chunk_mask:
+                if border_chunk in this_landscape.landscape_chunk_mask:
                     bordering += 1
             if 4 >= bordering >= generate_for_touch:
                 touching_threshold.append(ungenerated_chunk)
         
         for ungenerated_chunk in touching_threshold:
             generate_chunk(
-                game_map,
-                game_map_chunk_mask,
+                this_landscape,
                 ungenerated_chunk)
             ungenerated_chunks.remove(ungenerated_chunk)
         
@@ -122,7 +145,7 @@ def extend_map_using_ungenerated(
     min_y = None
     max_y = None
     
-    for position in game_map.keys():
+    for position in this_landscape.landscape.keys():
         if min_x == None:
             min_x = position[0]
         elif min_x > position[0]:
@@ -145,9 +168,28 @@ def extend_map_using_ungenerated(
     
     return ((min_x, max_x + 1), (min_y, max_y + 1))
 
+#assumes actor's position, not in chunk form
+#(what if there is actually something out there? delete actor as well?)
+def delete_map_at_position(
+    this_landscape,
+    position):
+    
+    chunk_position = (int(position[0] / chunk_size), int(position[1] / chunk_size))
+    
+    safe_chunk_positions = []
+    for x_position in xrange(chunk_position[0] - do_chunk_delete_distance, chunk_position[0] + do_chunk_generate_distance + 1):
+        for y_position in xrange(chunk_position[1] - do_chunk_delete_distance, chunk_position[1] + do_chunk_generate_distance + 1):
+            safe_chunk_positions.append((x_position, y_position))
+    
+    for map_position in this_landscape.landscape.keys():
+        if (int(map_position[0] / chunk_size), int(map_position[1] / chunk_size)) not in safe_chunk_positions:
+            del this_landscape.landscape[map_position]
+    for chunk_position in this_landscape.landscape_chunk_mask.keys():
+        if chunk_position not in safe_chunk_positions:
+            del this_landscape.landscape_chunk_mask[chunk_position]
+
 def generate_chunk(
-    game_map,
-    game_map_chunk_mask,
+    this_landscape,
     chunk_position):
     
     #check where surrounding chunks are
@@ -164,11 +206,11 @@ def generate_chunk(
     new_precip      = 0
     new_whatever    = 0
     for border_chunk in border_chunk_positions:
-        if border_chunk in game_map_chunk_mask:
+        if border_chunk in this_landscape.landscape_chunk_mask:
             touching_chunks += 1
-            new_temp     += game_map_chunk_mask[border_chunk][0]
-            new_precip   += game_map_chunk_mask[border_chunk][1]
-            new_whatever += game_map_chunk_mask[border_chunk][2]
+            new_temp     += this_landscape.landscape_chunk_mask[border_chunk][0]
+            new_precip   += this_landscape.landscape_chunk_mask[border_chunk][1]
+            new_whatever += this_landscape.landscape_chunk_mask[border_chunk][2]
     
     #fill in based on surrounding chunks
     #the more touching chunks, the higher likelihood of randomizing
@@ -227,9 +269,9 @@ def generate_chunk(
     else:
         new_chunk = [0, 0, 0]
     
-    game_map_chunk_mask[chunk_position] = tuple(new_chunk)
+    this_landscape.landscape_chunk_mask[chunk_position] = tuple(new_chunk)
     
-    game_map_chunk_bounds = (
+    this_landscape.landscape_chunk_bounds = (
         (chunk_position[0] * chunk_size,
          chunk_position[0] * chunk_size + chunk_size - 1),
         
@@ -237,8 +279,8 @@ def generate_chunk(
          chunk_position[1] * chunk_size + chunk_size - 1)
         )
     
-    for x in xrange(game_map_chunk_bounds[0][0], game_map_chunk_bounds[0][1] + 1):
-        for y in xrange(game_map_chunk_bounds[1][0], game_map_chunk_bounds[1][1] + 1):
+    for x in xrange(this_landscape.landscape_chunk_bounds[0][0], this_landscape.landscape_chunk_bounds[0][1] + 1):
+        for y in xrange(this_landscape.landscape_chunk_bounds[1][0], this_landscape.landscape_chunk_bounds[1][1] + 1):
             new_tile = list(new_chunk)
             #perform micro-randomizations
             change_field = random.randint(0, 2)
@@ -258,5 +300,5 @@ def generate_chunk(
                     break
             #map values:
             #(('type', temp, precip, ??), [walkable, empty, see-through], items)
-            game_map[x, y] = ((tile_type, new_tile[0], new_tile[1], new_tile[2]), [True, True, True], [])
+            this_landscape.landscape[x, y] = ((tile_type, new_tile[0], new_tile[1], new_tile[2]), [True, True, True], [])
     

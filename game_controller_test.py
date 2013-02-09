@@ -37,7 +37,7 @@ class controller(object):
                     self.model.initialize_map()
                 
                 elif event.key == K_m:
-                    print self.model
+                    print self.model.landscape
                 elif event.key == K_n:
                     self.model.print_actor()
                 

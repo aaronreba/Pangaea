@@ -14,9 +14,7 @@ class model(object):
         self.players = []
         self.actors = []
         
-        self.game_map = {}
-        self.game_map_chunk_mask = {}
-        self.game_map_size = None
+        self.landscape = None
         
         #current_actor is the actor who currently can act
         self.current_actor = None
@@ -69,20 +67,6 @@ class model(object):
     # string displays #
     ###################
     
-    def __str__(self):
-        print_me = ''
-        for k, y in enumerate(xrange(self.game_map_size[1][0], self.game_map_size[1][1])):
-            if k & 1 == 1:
-                print_me += ' '
-            for x in xrange(self.game_map_size[0][0], self.game_map_size[0][1]):
-                if (x, y) in self.game_map:
-                    print_me += str(self.game_map[x, y][1][1])[0] + ' '
-                else:
-                    print_me += '  '
-            print_me += '\n'
-        print_me += '\n'
-        return print_me
-    
     def print_actor(self):
         print self.current_actor
     
@@ -91,13 +75,13 @@ class model(object):
     ####################
     
     def create_item(self, item_name, locs):
-        self.game_map[locs][2].append(item.item(item_name))
+        self.landscape.landscape[locs][2].append(item.item(item_name))
     
     def remove_item(self, item_name, locs):
-        self.game_map[locs][2].remove(item.item(item_name))
+        self.landscape.landscape[locs][2].remove(item.item(item_name))
     
     def pick_up_item(self):
-        item_list = self.game_map[self.current_actor.position][2]
+        item_list = self.landscape.landscape[self.current_actor.position][2]
         if len(item_list) > 0:
             this_item = item_list[0]
             self.current_actor.add_item(this_item)
@@ -109,16 +93,15 @@ class model(object):
         this_actor.add_item(add_item)
     
     def generate_items(self):
-        for x in xrange(self.game_map_size[1][0], self.game_map_size[1][1]):
-            for y in xrange(self.game_map_size[0][0], self.game_map_size[0][1]):
-                if self.is_location_walkable((x, y)):
-                    random_item = item.generate_random_with_chance(self.item_levels)
-                    if random_item != None:
-                        self.game_map[x, y][2].append(random_item)
+        for x, y in self.landscape.landscape:
+            if self.is_location_walkable((x, y)):
+                random_item = item.generate_random_with_chance(self.item_levels)
+                if random_item != None:
+                    self.landscape.landscape[x, y][2].append(random_item)
     
-    #########################
-    # adding players/actors #
-    #########################
+    ##################################
+    # adding/removing players/actors #
+    ##################################
     
     def add_player(self, name, player_type):
         #name:
@@ -154,7 +137,7 @@ class model(object):
             self.current_actor = new_actor
             return
         
-        self.game_map[x, y][1][1] = False
+        self.landscape.landscape[x, y][1][1] = False
         
         # self.view.add_actor(new_actor)
         
@@ -177,6 +160,10 @@ class model(object):
                 each_actor.speed_time = int(each_actor.speed_time * self.speed_lcm)
             
             new_actor.speed_time = self.speed_lcm / new_actor.speed
+    
+    def remove_actor(self, remove_me):
+        if remove_me in self.actors:
+            self.actors.remove(remove_me)
     
     ##########################
     # modifying player/actor #
@@ -230,15 +217,15 @@ class model(object):
             dx = -1
             dy = 0
         
-        if (x + dx, y + dy) in self.game_map:
+        if (x + dx, y + dy) in self.landscape.landscape:
             #is walkable and is empty
-            if self.game_map[x + dx, y + dy][1][0] == True and\
-                self.game_map[x + dx, y + dy][1][1] == True:
+            if self.landscape.landscape[x + dx, y + dy][1][0] == True and\
+                self.landscape.landscape[x + dx, y + dy][1][1] == True:
                 moved = True
         
         if moved:
-            self.game_map[x, y][1][1] = True
-            self.game_map[x + dx, y + dy][1][1] = False
+            self.landscape.landscape[x, y][1][1] = True
+            self.landscape.landscape[x + dx, y + dy][1][1] = False
             
             # self.view.move_actor_image(self.current_actor, x + dx, y + dy)
             
@@ -249,9 +236,17 @@ class model(object):
             #check if centered actor has moved into a new chunk
             if self.current_actor == self.human_actor:
                 chunk_size = terraform.chunk_size
+                #check to generate new terrain
+                #or check to delete out of range terrain
                 if (x / chunk_size) != (x + dx / chunk_size) or\
                    (y / chunk_size) != (y + dy / chunk_size):
                     self.extend_map_from_actor(self.human_actor)
+                    self.retract_map_from_actor(self.human_actor)
+                    
+                    #remove any actors that are now outside of viewing distance
+                    for each_actor in self.actors:
+                        if each_actor.position not in self.landscape.landscape:
+                            self.remove_actor(each_actor)
         
         return moved
     
@@ -267,29 +262,31 @@ class model(object):
     
     def extend_map_from_actor(self, extend_from_me):
         immediate_ungenerated_chunks = terraform.find_immediate_ungenerated(
-            self.game_map,
-            self.game_map_chunk_mask,
+            self.landscape,
             extend_from_me.position,
             terraform.check_chunk_generate_distance)
         
         if len(immediate_ungenerated_chunks) != 0:
             distant_ungenerated_chunks = terraform.find_immediate_ungenerated(
-                self.game_map,
-                self.game_map_chunk_mask,
+                self.landscape,
                 extend_from_me.position,
                 terraform.do_chunk_generate_distance)
             
-            self.game_map_size = terraform.extend_map_using_ungenerated(
-                                 self.game_map,
-                                 self.game_map_chunk_mask,
-                                 distant_ungenerated_chunks)
+            self.landscape.landscape_size = terraform.extend_map_using_ungenerated(
+                self.landscape,
+                distant_ungenerated_chunks)
+    
+    def retract_map_from_actor(self, retract_from_me):
+        terraform.delete_map_at_position(
+            self.landscape,
+            retract_from_me.position)
     
     def is_location_walkable(self, locs):
-        return self.game_map[locs][1][0] == True
+        return self.landscape.landscape[locs][1][0] == True
     def is_location_empty(self, locs):
-        return self.game_map[locs][1][1] == True
+        return self.landscape.landscape[locs][1][1] == True
     def is_location_seethrough(self, locs):
-        return self.game_map[locs][1][2] == True
+        return self.landscape.landscape[locs][1][2] == True
     
     #################
     # updating view #
