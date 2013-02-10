@@ -38,6 +38,9 @@ class controller(object):
                 
                 elif event.key == K_m:
                     print self.model.landscape
+                    print self.model.human_actor.position
+                elif event.key == K_v:
+                    self.model.print_levels()
                 elif event.key == K_n:
                     self.model.print_actor()
                 
@@ -55,7 +58,7 @@ class controller(object):
                     if unequip_me != None:
                         self.model.current_actor.add_item(unequip_me)
                 
-                elif event.key == K_m:
+                elif event.key == K_b:
                     self.model.traverse_portal()
                 
                 #move actor

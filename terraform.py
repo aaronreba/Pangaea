@@ -194,7 +194,7 @@ def make_terrain_test(scheme):
         
         this_landscape.cities.append(add_this_city)
         
-        add_this_portal = portal((2, 2), 'up')
+        add_this_portal = portal((2, 0), 'up')
         this_landscape.portals.append(add_this_portal)
         
         return this_landscape
@@ -209,9 +209,9 @@ def make_terrain_test(scheme):
                 this_landscape.landscape_chunk_mask[x, y] = (0, 0, 0)
         this_landscape.landscape_size = ((0, 5), (0, 5))
         
-        add_this_portal = portal((2, 2), 'up')
+        add_this_portal = portal((2, 1), 'up')
         this_landscape.portals.append(add_this_portal)
-        add_this_portal = portal((3, 3), 'down')
+        add_this_portal = portal((3, 1), 'down')
         this_landscape.portals.append(add_this_portal)
         
         return this_landscape
@@ -226,7 +226,7 @@ def make_terrain_test(scheme):
                 this_landscape.landscape_chunk_mask[x, y] = (0, 0, 0)
         this_landscape.landscape_size = ((0, 5), (0, 5))
         
-        add_this_portal = portal((3, 3), 'down')
+        add_this_portal = portal((3, 2), 'down')
         this_landscape.portals.append(add_this_portal)
         
         return this_landscape

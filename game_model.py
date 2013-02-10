@@ -7,6 +7,13 @@ import player
 import terraform
 import copy
 
+class level(object):
+    def __init__(self):
+        self.level = None
+        self.landscape = None
+        self.actors = None
+        self.human_actor_info = None
+
 class model(object):
     def __init__(self):
         # self.view = view
@@ -67,27 +74,24 @@ class model(object):
     # level storing/loading #
     #########################
     
-    class level(object):
-        def __init__(self):
-            self.landscape = None
-            self.actors = None
-            self.human_actor_info = None
-    
     def store_level(self):
         this_level = level()
+        this_level.level = self.level
         this_level.landscape = copy.deepcopy(self.landscape)
+        self.actors.remove(self.human_actor)
         this_level.actors = copy.deepcopy(self.actors)
-        #remove human actor from actors
-        this_level.actors.remove(self.human_actor)
         this_level.human_actor_info = {}
         this_level.human_actor_info['speed_time'] = self.human_actor.speed_time
+        this_level.human_actor_info['pos'] = self.human_actor.position
         return this_level
     
     def load_level(self, number):
         next_level = self.stored_levels[number]
         self.landscape = next_level.landscape
         self.actors = next_level.actors
+        self.actors.append(self.human_actor)
         self.human_actor.speed_time = next_level.human_actor_info['speed_time']
+        self.human_actor.position = next_level.human_actor_info['pos']
         self.recalculate_speed()
     
     ###################
@@ -96,6 +100,11 @@ class model(object):
     
     def print_actor(self):
         print self.current_actor
+    
+    def print_levels(self):
+        for this_level in self.stored_levels:
+            print 'Level: ' + str(this_level.level)
+            print this_level.landscape
     
     ####################
     # items and actors #
@@ -121,7 +130,7 @@ class model(object):
     
     def generate_items(self):
         for x, y in self.landscape.landscape:
-            if self.landscape(is_location_walkable((x, y))):
+            if self.landscape.is_location_walkable((x, y)):
                 random_item = item.generate_random_with_chance(self.item_levels)
                 if random_item != None:
                     self.landscape.landscape[x, y][2].append(random_item)
@@ -177,6 +186,8 @@ class model(object):
         
         if self.initialized:
             self.recalculate_speed()
+            
+            new_actor.speed_time = self.speed_lcm / new_actor.speed
     
     def remove_actor(self, remove_me):
         if remove_me in self.actors:
@@ -192,8 +203,6 @@ class model(object):
                                       in self.actors])
         for each_actor in self.actors[:-1]:
             each_actor.speed_time = int(each_actor.speed_time * self.speed_lcm)
-        
-        new_actor.speed_time = self.speed_lcm / new_actor.speed
     
     ##########################
     # modifying player/actor #
@@ -263,20 +272,17 @@ class model(object):
             
             self.next_turn()
             
-            #check if centered actor has moved into a new chunk
+            ###################################################
+            # check if human actor has moved into a new chunk #
+            ###################################################
+            
             if self.current_actor == self.human_actor:
                 chunk_size = terraform.chunk_size
                 #check to generate new terrain
                 #or check to delete out of range terrain
                 if (x / chunk_size) != (x + dx / chunk_size) or\
                    (y / chunk_size) != (y + dy / chunk_size):
-                    self.extend_map_from_actor(self.human_actor)
-                    self.retract_map_from_actor(self.human_actor)
-                    
-                    #remove any actors that are now outside of viewing distance
-                    for each_actor in self.actors:
-                        if each_actor.position not in self.landscape.landscape:
-                            self.remove_actor(each_actor)
+                    self.do_full_extension_retraction()
         
         return moved
     
@@ -290,6 +296,15 @@ class model(object):
     #############
     # map stuff #
     #############
+    
+    def do_full_extension_retraction(self):
+        self.extend_map_from_actor(self.human_actor)
+        self.retract_map_from_actor(self.human_actor)
+        
+        #remove any actors that are now outside of viewing distance
+        for each_actor in self.actors:
+            if each_actor.position not in self.landscape.landscape:
+                self.remove_actor(each_actor)
     
     def extend_map_from_actor(self, extend_from_me):
         immediate_ungenerated_chunks = terraform.find_immediate_ungenerated(
@@ -327,27 +342,46 @@ class model(object):
                 self.level += 1
                 
                 #generate new level
-                self.landscape = terraform.landscape(self.level)
+                self.landscape = terraform.make_terrain_test(str(self.level) + '_grass')
+                
+                self.actors = [self.human_actor]
+                
+                #set actor's position in new world (modify internal data of new landscape)
+                self.human_actor.position = (0, 0)
+                self.landscape.landscape[0, 0][1][1] = False
+                
+                #generate map
+                self.do_full_extension_retraction()
+                
+                #make new speed lcm
+                self.recalculate_speed()
+            
             else:
                 #store current level over old level
                 self.stored_levels.pop(self.level - 1)
-                this_level = store_level()
+                this_level = self.store_level()
                 self.stored_levels.insert(self.level - 1, this_level)
                 
                 self.level += 1
                 
                 #load old level
-                self.load_level(self.level)
+                self.load_level(self.level - 1)
+        
         elif direction == 'down':
-            #store current level over old level
-            self.stored_levels.pop(self.level - 1)
+            #if this is the top level, save it new and insert at end
+            if len(self.stored_levels) == self.level - 1:
+                this_level = self.store_level()
+                self.stored_levels.append(this_level)
             
-            this_level = store_level()
-            self.stored_levels.insert(self.level - 1, this_level)
+            else:
+                #store current level over old level
+                self.stored_levels.pop(self.level - 1)
+                
+                this_level = self.store_level()
+                self.stored_levels.insert(self.level - 1, this_level)
             
             self.level -= 1
-            
-            self.load_level(self.level)
+            self.load_level(self.level - 1)
         
         return True
     
