@@ -13,7 +13,9 @@ import common
 MS_PER_FRAME = 1000
 
 class actor():
-    def __init__(self, name, actor_type, owner, owner_type):
+    def __init__(self, id_number, name, actor_type, owner, owner_type):
+        self.id_number = id_number
+        
         #name: name of actor
         #actor_type: 'dog, 'cat', etc...
         #owner: name of player
@@ -119,10 +121,12 @@ class actor():
                 equipment_string += self.equipment[equipment].name + ' '
         
         return\
-'health: {0}, mana: {1}\n\
+'id: {9}\n\
+health: {0}, mana: {1}\n\
 power: {2}, toughness: {3}, agility: {4}, vitality: {5}\n\
 inventory: {6}\n\
-equipment: {7}'.format(
+equipment: {7}\n\
+position: {8}'.format(
             self.stats['health'],
             self.stats['mana'],
             self.stats['power'],
@@ -130,7 +134,15 @@ equipment: {7}'.format(
             self.stats['agility'],
             self.stats['vitality'],
             inventory_string,
-            equipment_string)
+            equipment_string,
+            str(self.position),
+            str(self.id_number))
+    
+    def __eq__(self, other):
+        if type(self) == type(other):
+            return self.id_number == other.id_number
+        else:
+            return False
     
     def equip_item(self, item):
         #return_item is a list of whatever items that were

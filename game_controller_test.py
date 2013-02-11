@@ -25,13 +25,13 @@ class controller(object):
                 #test make player and add actor
                 if event.key == K_1:
                     self.model.add_player('Aaron', 'human')
-                    self.model.add_actor('Doggy', 'dog', 'Aaron', 'human', (0, 0))
+                    self.model.add_actor(self.model.actor_id_counter, 'Doggy', 'dog', 'Aaron', 'human', (0, 0))
                     self.model.actors[-1].speed = 6
                     #self.model.add_actor('Doggy3', 'dog', 'Aaron', 'human', 0, 1)
                     #self.model.actors[-1].speed = 3
                 elif event.key == K_2:
                     self.model.add_player('Bill Gates', 'computer')
-                    self.model.add_actor('Doggy2', 'dog', 'Bill Gates', 'computer', (6, 2))
+                    self.model.add_actor(self.model.actor_id_counter, 'Doggy2', 'dog', 'Bill Gates', 'computer', (6, 2))
                     self.model.actors[-1].speed = 4
                 elif event.key == K_3:
                     self.model.initialize_map()
@@ -42,7 +42,9 @@ class controller(object):
                 elif event.key == K_v:
                     self.model.print_levels()
                 elif event.key == K_n:
-                    self.model.print_actor()
+                    self.model.print_actors()
+                elif event.key == K_c:
+                    self.model.print_landscape_actors()
                 
                 elif event.key == K_i:
                     self.model.create_item('Leather Gloves', (4, 0))
@@ -69,3 +71,4 @@ class controller(object):
                 #quit
                 elif event.key == K_q:
                     return 'main_menu'
+

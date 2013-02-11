@@ -1,13 +1,5 @@
 import random
 
-#map values:
-#(
-#('type', temp, precip, ??),
-#[walkable, empty, see-through, interactable],
-#[items],
-#[images in order of layering]
-#)
-
 ##########
 # to do: #
 ##########
@@ -48,6 +40,42 @@ biome_graph[(2, 4),   (-4, -1)] = 'desert'
 biome_graph[(2, 4),   (0, 2)]   = 'grass'
 biome_graph[(2, 4),   (3, 4)]   = 'jungle'
 
+class tile(object):
+    def __init__(self, information=None):
+        if information != None:
+            self.write(information)
+        else:
+            self.tile_type = None
+            self.temperature = None
+            self.precipitation = None
+            self.psych = None
+            
+            self.walkable = None
+            self.occupied = None
+            self.seethrough = None
+            self.interactable = None
+            
+            self.items = []
+            
+            self.images = []
+        
+        self.actors = []
+    
+    def write(self, information):
+        self.tile_type = information[0][0]
+        self.temperature = information[0][1]
+        self.precipitation = information[0][2]
+        self.psych = information[0][3]
+        
+        self.walkable     = information[1][0]
+        self.occupied     = information[1][1]
+        self.seethrough   = information[1][2]
+        self.interactable = information[1][3]
+        
+        self.items = information[2]
+        
+        self.images = information[3]
+
 class landscape(object):
     def __init__(self, level):
         self.landscape = {}
@@ -74,25 +102,16 @@ class landscape(object):
                     print_me += 'b '
                 elif self.chunk_in_city_bounds((chunk_location)):
                     print_me += 'c '
-                elif (x, y) in self.landscape:
-                    print_me += str(self.landscape[x, y][1][1])[0] + ' '
+                elif self.landscape[x, y].occupied:
+                    print_me += 'a '
                 else:
-                    print_me += '  '
+                    print_me += '. '
             print_me += '\n'
         print_me += '\n'
         return print_me
     
     def __repr__(self):
         return self.landscape.__str__()
-    
-    def is_location_walkable(self, locs):
-        return self.landscape[locs][1][0] == True
-    def is_location_empty(self, locs):
-        return self.landscape[locs][1][1] == True
-    def is_location_seethrough(self, locs):
-        return self.landscape[locs][1][2] == True
-    def is_location_interactable(self, locs):
-        return self.landscape[locs][1][3] == True
     
     def chunk_in_city_bounds(self, this_chunk):
         for this_city in self.cities:
@@ -114,6 +133,30 @@ class landscape(object):
             if this_portal.location == location:
                 return this_portal.direction
         return None
+    
+    def has_actor(self, this_actor):
+        for this_tile in self.landscape:
+            if this_actor in self.landscape[this_tile].actors:
+                return True
+        return False
+    
+    def print_actors(self):
+        print 'land'
+        for this_tile in self.landscape:
+            for this_actor in self.landscape[this_tile].actors:
+                print this_tile
+                print this_actor
+    
+    def remove_actor(self, actor_id):
+        do_remove = False
+        for location in self.landscape:
+            for each_actor in self.landscape[location].actors:
+                if each_actor.id_number == actor_id:
+                    do_remove = True
+                    break
+            if do_remove:
+                self.landscape[location].actors.remove(each_actor)
+                break
 
 #each city has 3-4 (or more?) chunks designated to its boundaries.
 #its building placements are stored. its terrain is not stored.
@@ -155,7 +198,8 @@ def make_terrain_test(scheme):
         this_landscape = landscape(1)
         for x in xrange(10):
             for y in xrange(15):
-                this_landscape.landscape[x, y] = (('grass', 0, 0, 0), [True, True, True, False], [], [])
+                this_tile = tile((('grass', 0, 0, 0), [True, False, True, False], [], []))
+                this_landscape.landscape[x, y] = this_tile
         for x in xrange(2):
             for y in xrange(3):
                 this_landscape.landscape_chunk_mask[x, y] = (0, 0, 0)
@@ -203,7 +247,8 @@ def make_terrain_test(scheme):
         this_landscape = landscape(2)
         for x in xrange(5):
             for y in xrange(5):
-                this_landscape.landscape[x, y] = (('grass', 0, 0, 0), [True, True, True, False], [], [])
+                this_tile = tile((('grass', 0, 0, 0), [True, False, True, False], [], []))
+                this_landscape.landscape[x, y] = this_tile
         for x in xrange(1):
             for y in xrange(1):
                 this_landscape.landscape_chunk_mask[x, y] = (0, 0, 0)
@@ -220,7 +265,8 @@ def make_terrain_test(scheme):
         this_landscape = landscape(3)
         for x in xrange(5):
             for y in xrange(5):
-                this_landscape.landscape[x, y] = (('grass', 0, 0, 0), [True, True, True, False], [], [])
+                this_tile = tile((('grass', 0, 0, 0), [True, False, True, False], [], []))
+                this_landscape.landscape[x, y] = this_tile
         for x in xrange(1):
             for y in xrange(1):
                 this_landscape.landscape_chunk_mask[x, y] = (0, 0, 0)
@@ -335,7 +381,6 @@ def extend_map_using_ungenerated(
     return ((min_x, max_x + 1), (min_y, max_y + 1))
 
 #assumes actor's position, not in chunk form
-#(what if there is actually something out there? delete actor as well?)
 def delete_map_at_position(
     this_landscape,
     position):
@@ -471,7 +516,7 @@ def generate_chunk(
             #[items],
             #[images in order of layering]
             #)
-            this_landscape.landscape[x, y] = ((tile_type, new_tile[0], new_tile[1], new_tile[2]), [True, True, True, False], [], [])
+            this_landscape.landscape[x, y] = tile(((tile_type, new_tile[0], new_tile[1], new_tile[2]), [True, False, True, False], [], []))
     
     #post processing to add land features (cities, doodads, etc)
     
