@@ -11,6 +11,7 @@ class controller(object):
         self.key_map = {}
         
         direction_key_map = {}
+        direction_key_map[K_s] = -1
         direction_key_map[K_e] = 1
         direction_key_map[K_d] = 3
         direction_key_map[K_x] = 5

@@ -211,8 +211,13 @@ class model(object):
         else:
             y_even = False
         
+        #pause
+        if direction == -1:
+            dx = 0
+            dy = 0
+        
         #diagonal up
-        if direction == 1:
+        elif direction == 1:
             if y_even:
                 dx = 0
             else:
@@ -247,7 +252,11 @@ class model(object):
             dx = -1
             dy = 0
         
-        if (x + dx, y + dy) in self.landscape.landscape:
+        if dx == dy == 0:
+            #pausing
+            moved = True
+        
+        elif (x + dx, y + dy) in self.landscape.landscape:
             #is walkable and is empty
             if self.landscape.landscape[x + dx, y + dy].walkable == True and\
                 self.landscape.landscape[x + dx, y + dy].occupied == False:
