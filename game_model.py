@@ -289,6 +289,31 @@ class model(object):
         return moved
     
     def ai_action(self):
+        #behavior: aggressive, runner
+        #mood normal, afraid, beserk, resting
+        
+        #consider behavior, style, mood then determine action
+        
+        #consider that there may be special actions an ai can do:
+        #1. running away from a time bomb
+        #2. setting a trap
+        #3. etc
+        
+        #if mood == normal:
+            #if behavior == aggressive:
+                #if in range, attack
+                #else, run straight to target
+            #elif behavior == runner:
+                #if at furthest possible range, attack
+                #else, run away
+        #elif mood == berserk:
+            #if in range, attack
+            #else, run straight to target
+        #elif mood == afraid:
+            #run away from target
+        #elif mood == resting:
+            #do nothing
+        
         #how unpythonic!
         if self.move_actor(9):
             pass
