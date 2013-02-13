@@ -1,4 +1,5 @@
 import random
+import common
 
 ##########
 # to do: #
@@ -89,25 +90,56 @@ class landscape(object):
         #traversed_location is where the player entered a portal
         self.traversed_location = None
     
-    def __str__(self):
-        print_me = ''
-        for k, y in enumerate(xrange(self.landscape_size[1][0], self.landscape_size[1][1])):
-            if k & 1 == 1:
-                print_me += ' '
-            for x in xrange(self.landscape_size[0][0], self.landscape_size[0][1]):
-                chunk_location = (int(x / chunk_size), int(y / chunk_size))
-                if self.get_portal_direction_at_location((x, y)) != None:
-                    print_me += self.get_portal_direction_at_location((x, y))[0] + ' '
-                elif self.location_has_building((x, y)):
-                    print_me += 'b '
-                elif self.chunk_in_city_bounds((chunk_location)):
-                    print_me += 'c '
-                elif self.landscape[x, y].occupied:
-                    print_me += 'a '
-                else:
-                    print_me += '. '
+    #center is actor to center map on. accounts for sight of actor.
+    def __str__(self, center_actor=None):
+        if center_actor != None:
+            #get tiles in sight distance of center_actor
+            
+            center_actor_position = center_actor.position
+            
+            print_me = ''
+            for k, y in enumerate(xrange(self.landscape_size[1][0], self.landscape_size[1][1])):
+                if k & 1 == 1:
+                    print_me += ' '
+                for x in xrange(self.landscape_size[0][0], self.landscape_size[0][1]):
+                    chunk_location = (int(x / chunk_size), int(y / chunk_size))
+                    distance_to_actor = common.hex_distance(center_actor_position, (x, y))
+                    if distance_to_actor <= center_actor.sight_distance:
+                        if self.get_portal_direction_at_location((x, y)) != None:
+                            print_me += self.get_portal_direction_at_location((x, y))[0] + ' '
+                        elif self.location_has_building((x, y)):
+                            print_me += 'b '
+                        elif self.chunk_in_city_bounds((chunk_location)):
+                            print_me += 'c '
+                        elif self.landscape[x, y].occupied:
+                            print_me += 'a '
+                        elif distance_to_actor <= 9:
+                            print_me += '. '
+                        else:
+                            print_me += '. '
+                    else:
+                        print_me += '  '
+                print_me += '\n'
             print_me += '\n'
-        print_me += '\n'
+        else:
+            print_me = ''
+            for k, y in enumerate(xrange(self.landscape_size[1][0], self.landscape_size[1][1])):
+                if k & 1 == 1:
+                    print_me += ' '
+                for x in xrange(self.landscape_size[0][0], self.landscape_size[0][1]):
+                    chunk_location = (int(x / chunk_size), int(y / chunk_size))
+                    if self.get_portal_direction_at_location((x, y)) != None:
+                        print_me += self.get_portal_direction_at_location((x, y))[0] + ' '
+                    elif self.location_has_building((x, y)):
+                        print_me += 'b '
+                    elif self.chunk_in_city_bounds((chunk_location)):
+                        print_me += 'c '
+                    elif self.landscape[x, y].occupied:
+                        print_me += 'a '
+                    else:
+                        print_me += '. '
+                print_me += '\n'
+            print_me += '\n'
         return print_me
     
     def __repr__(self):

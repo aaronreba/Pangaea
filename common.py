@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from math import sqrt
+from math import ceil
 
 def screen_coords_from_map(x, y):
     screen_x = x * 45
@@ -54,4 +55,20 @@ def lcm(a, b):
 
 def lcmm(lcms):
     return reduce(lcm, lcms)
+
+def hex_distance(p0, p1):
+    p0x, p0y = p0
+    p1x, p1y = p1
+    dx = abs(p1x - p0x)
+    dy = abs(p1y - p0y)
     
+    if dy & 1 == 1 and\
+            (p0y & 1 == 1 and p1x <= p0x or\
+             p0y & 1 == 0 and p1x >= p0x):
+        dx += 1
+    
+    if dx <= ceil(dy / 2.0):
+        return dy
+    else:
+        return int(dx - ceil(dy / 2.0) + dy)
+

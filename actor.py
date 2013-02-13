@@ -10,30 +10,9 @@ from math import ceil
 
 import common
 
-MS_PER_FRAME = 1000
+import ai
 
-class ai():
-    def __init__(self, behavior=None):
-        self.behavior = behavior
-        self.mood = 'normal'
-    
-    def set_behavior_running_distance(self, value):
-        #if the ai is closer than this value, run.
-        #0 = melee
-        self.behavior_running_distance = 0
-    
-    def set_mood_normal(self):
-        self.mood = 'normal'
-    def set_mood_afraid(self):
-        self.mood = 'afraid'
-    def set_mood_berserk(self):
-        self.mood = 'berserk'
-    def set_mood_resting(self):
-        self.mood = 'resting'
-    
-    def set_social(self, social):
-        #will call for help or run to allies
-        self.social = social
+MS_PER_FRAME = 1000
 
 class actor():
     def __init__(self, id_number, name, actor_type, owner, owner_type):
@@ -49,7 +28,11 @@ class actor():
         self.owner = owner
         self.owner_type = owner_type
         
-        self.position = None #position on map
+        #position on map
+        self.position = None
+        
+        #how far actor can see
+        self.sight_distance = 5
         
         #########
         # stats #
@@ -112,7 +95,7 @@ class actor():
         #for humans, ai is only a storage structure.
         #if the player is berserk, it can't use complex attacks (only direct attacks).
         #if the player is scared, it can't attack.
-        self.ai = ai()
+        self.ai = ai.ai()
         
         ###################
         # view attributes #
