@@ -45,6 +45,15 @@ class controller(object):
                 elif event.key == K_j:
                     print self.model.landscape.__str__(self.model.human_actor)
                     print self.model.human_actor.position
+                elif event.key == K_h:
+                    self.model.landscape.landscape[2, -2].walkable = False
+                    self.model.landscape.landscape[2, -1].walkable = False
+                    self.model.landscape.landscape[2, 0].walkable = False
+                    self.model.landscape.landscape[2, 1].walkable = False
+                    self.model.landscape.landscape[2, 2].walkable = False
+                    self.model.landscape.landscape[2, 3].walkable = False
+                    self.model.landscape.landscape[2, 4].walkable = False
+                    print self.model.landscape.pathfind((0, 0), (5, 6))
                 elif event.key == K_v:
                     self.model.print_levels()
                 elif event.key == K_n:

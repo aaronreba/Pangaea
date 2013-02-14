@@ -57,18 +57,40 @@ def lcmm(lcms):
     return reduce(lcm, lcms)
 
 def hex_distance(p0, p1):
-    p0x, p0y = p0
-    p1x, p1y = p1
-    dx = abs(p1x - p0x)
-    dy = abs(p1y - p0y)
+    p0_x, p0_y = p0
+    p1_x, p1_y = p1
+    d_x = abs(p1_x - p0_x)
+    d_y = abs(p1_y - p0_y)
     
-    if dy & 1 == 1 and\
-            (p0y & 1 == 1 and p1x <= p0x or\
-             p0y & 1 == 0 and p1x >= p0x):
-        dx += 1
+    if d_y & 1 == 1 and\
+            (p0_y & 1 == 1 and p1_x <= p0_x or\
+             p0_y & 1 == 0 and p1_x >= p0_x):
+        d_x += 1
     
-    if dx <= ceil(dy / 2.0):
-        return dy
+    ceil_d_y = int(ceil(d_y / 2.0))
+    
+    if d_x <= ceil_d_y:
+        return d_y
     else:
-        return int(dx - ceil(dy / 2.0) + dy)
+        return int(d_x - ceil_d_y + d_y)
+
+def get_adjacent(p):
+    adjacent = []
+    
+    #add left and right sides
+    adjacent.append((p[0] - 1, p[1]))
+    adjacent.append((p[0] + 1, p[1]))
+    
+    #2 in front or behind
+    adjacent.append((p[0], p[1] - 1))
+    adjacent.append((p[0], p[1] + 1))
+    
+    if p[1] & 1 == 0:
+        adjacent.append((p[0] - 1, p[1] - 1))
+        adjacent.append((p[0] - 1, p[1] + 1))
+    else:
+        adjacent.append((p[0] + 1, p[1] - 1))
+        adjacent.append((p[0] + 1, p[1] + 1))
+    
+    return adjacent
 

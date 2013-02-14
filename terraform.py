@@ -98,8 +98,8 @@ class landscape(object):
             center_actor_position = center_actor.position
             
             print_me = ''
-            for k, y in enumerate(xrange(self.landscape_size[1][0], self.landscape_size[1][1])):
-                if k & 1 == 1:
+            for y in xrange(self.landscape_size[1][0], self.landscape_size[1][1]):
+                if y & 1 == 1:
                     print_me += ' '
                 for x in xrange(self.landscape_size[0][0], self.landscape_size[0][1]):
                     chunk_location = (int(x / chunk_size), int(y / chunk_size))
@@ -113,8 +113,6 @@ class landscape(object):
                             print_me += 'c '
                         elif self.landscape[x, y].occupied:
                             print_me += 'a '
-                        elif distance_to_actor <= 9:
-                            print_me += '. '
                         else:
                             print_me += '. '
                     else:
@@ -123,8 +121,8 @@ class landscape(object):
             print_me += '\n'
         else:
             print_me = ''
-            for k, y in enumerate(xrange(self.landscape_size[1][0], self.landscape_size[1][1])):
-                if k & 1 == 1:
+            for y in xrange(self.landscape_size[1][0], self.landscape_size[1][1]):
+                if y & 1 == 1:
                     print_me += ' '
                 for x in xrange(self.landscape_size[0][0], self.landscape_size[0][1]):
                     chunk_location = (int(x / chunk_size), int(y / chunk_size))
@@ -189,6 +187,65 @@ class landscape(object):
             if do_remove:
                 self.landscape[location].actors.remove(each_actor)
                 break
+    
+    ###################################
+    # pathfinding and related goodies #
+    ###################################
+    
+    #a* based
+    def pathfind(self, p0, p1):
+        open_list = [p0]
+        closed_list = []
+        
+        closed_list.append(p0)
+        
+        current_point = p0
+        
+        current_path = []
+        
+        while len(open_list) != 0:
+            closed_list.append(current_point)
+            
+            adjacent_points = common.get_adjacent(current_point)
+            #append adjacent points that aren't in open
+            for adjacent_point in adjacent_points:
+                if adjacent_point not in closed_list and\
+                        not self.landscape[adjacent_point].occupied and\
+                        self.landscape[adjacent_point].walkable:
+                    open_list.append(adjacent_point)
+            
+            #get best f of adjacent
+            best_f = None
+            best_adjacent = None
+            for adjacent_point in adjacent_points:
+                if adjacent_point in open_list:
+                    f_score = common.hex_distance(adjacent_point, p1)
+                    if best_f == None or f_score < best_f:
+                        best_f = f_score
+                        best_adjacent = adjacent_point
+            
+            if best_f == None:
+                if len(current_path) == 0:
+                    #not possible to find path
+                    path_found = False
+                    break
+                else:
+                    closed_list.append(current_point)
+                    current_point = current_path[-1]
+            elif best_adjacent == p1:
+                current_path.append(current_point)
+                path_found = True
+                break
+            else:
+                #one more point towards the end (hopefully)
+                current_path.append(current_point)
+                current_point = best_adjacent
+        
+        if path_found:
+            current_path.append(p1)
+            return current_path
+        else:
+            return []
 
 #each city has 3-4 (or more?) chunks designated to its boundaries.
 #its building placements are stored. its terrain is not stored.
