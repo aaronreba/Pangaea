@@ -36,6 +36,8 @@ class controller(object):
                     self.model.add_actor(self.model.actor_id_counter, 'Doggy2', 'dog', 'Bill Gates', 'computer', (6, 2))
                     self.model.actors[-1].speed = 4
                     self.model.actors[-1].ai.set_mood_normal()
+                elif event.key == K_4:
+                    self.model.actors[-1].ai.target = self.model.human_actor
                 elif event.key == K_0:
                     self.model.initialize_map()
                 

@@ -314,11 +314,28 @@ class model(object):
         #elif mood == resting:
             #do nothing
         
-        #how unpythonic!
-        if self.move_actor(9):
-            pass
-        elif self.move_actor(3):
-            pass
+        current_actor_ai = self.current_actor.ai
+        
+        current_actor_position = self.current_actor.position
+        target_actor_position = self.current_actor.ai.target.position
+        distance_to_target = common.hex_distance(current_actor_position, target_actor_position)
+        
+        current_actor_running_distance = current_actor_ai.behavior_running_distance
+        
+        if current_actor_ai.is_mood_normal():
+            if distance_to_target <= current_actor_running_distance:
+                self.move_actor(5)
+            else:
+                #pathfind to target, take one step
+                path_to_target = self.landscape.pathfind(current_actor_position, target_actor_position)
+                
+                #remove last point, it's the destination
+                path_to_target.pop()
+                
+                move_to_position = path_to_target[-1]
+                
+                #determine direction of where to move
+                self.move_actor(common.get_direction(current_actor_position, move_to_position))
     
     #############
     # map stuff #

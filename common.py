@@ -3,6 +3,12 @@
 from math import sqrt
 from math import ceil
 
+class CommonException(Exception):
+    def __init__(self, msg):
+        self.msg = msg
+    def __str__(self):
+        return 'Common Exception: ' + self.msg
+
 def screen_coords_from_map(x, y):
     screen_x = x * 45
     screen_y = y * 30
@@ -93,4 +99,43 @@ def get_adjacent(p):
         adjacent.append((p[0] + 1, p[1] + 1))
     
     return adjacent
+
+def get_direction(p0, p1):
+    if hex_distance(p0, p1) != 1:
+        raise CommonException('Attempting to get direction when distance is not 1')
+    
+    p0_x, p0_y = p0
+    p1_x, p1_y = p1
+    
+    dx = p0_x - p1_x
+    dy = p0_y - p1_y
+    
+    if p0_y & 1 == 0:
+        #is even
+        if dx == 0 and dy == 1:
+            return 1
+        elif dx == -1 and dy == 0:
+            return 3
+        elif dx == 0 and dy == -1:
+            return 5
+        elif dx == 1 and dy == -1:
+            return 7
+        elif dx == 1 and dy == 0:
+            return 9
+        else:
+            return 11
+    else:
+        #odd
+        if dx == -1 and dy == 1:
+            return 1
+        elif dx == -1 and dy == 0:
+            return 3
+        elif dx == -1 and dy == -1:
+            return 5
+        elif dx == 0 and dy == -1:
+            return 7
+        elif dx == 1 and dy == 0:
+            return 9
+        else:
+            return 11
 
