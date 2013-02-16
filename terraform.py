@@ -211,7 +211,8 @@ class landscape(object):
             for adjacent_point in adjacent_points:
                 if adjacent_point not in closed_list and\
                         not self.landscape[adjacent_point].occupied and\
-                        self.landscape[adjacent_point].walkable:
+                        self.landscape[adjacent_point].walkable or\
+                        adjacent_point == p1:
                     open_list.append(adjacent_point)
             
             #get best f of adjacent

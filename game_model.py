@@ -332,7 +332,7 @@ class model(object):
                 #remove last point, it's the destination
                 path_to_target.pop()
                 
-                move_to_position = path_to_target[-1]
+                move_to_position = path_to_target[1]
                 
                 #determine direction of where to move
                 self.move_actor(common.get_direction(current_actor_position, move_to_position))

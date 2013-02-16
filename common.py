@@ -7,7 +7,7 @@ class CommonException(Exception):
     def __init__(self, msg):
         self.msg = msg
     def __str__(self):
-        return 'Common Exception: ' + self.msg
+        return self.msg
 
 def screen_coords_from_map(x, y):
     screen_x = x * 45
@@ -78,7 +78,7 @@ def hex_distance(p0, p1):
     if d_x <= ceil_d_y:
         return d_y
     else:
-        return int(d_x - ceil_d_y + d_y)
+        return d_x - ceil_d_y + d_y
 
 def get_adjacent(p):
     adjacent = []
