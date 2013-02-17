@@ -322,20 +322,43 @@ class model(object):
         
         current_actor_running_distance = current_actor_ai.behavior_running_distance
         
-        if current_actor_ai.is_mood_normal():
-            if distance_to_target <= current_actor_running_distance:
-                self.move_actor(5)
-            else:
-                #pathfind to target, take one step
-                path_to_target = self.landscape.pathfind(current_actor_position, target_actor_position)
-                
-                #remove last point, it's the destination
-                path_to_target.pop()
-                
-                move_to_position = path_to_target[1]
-                
-                #determine direction of where to move
-                self.move_actor(common.get_direction(current_actor_position, move_to_position))
+        path_to_target = self.landscape.pathfind(current_actor_position, target_actor_position)
+        
+        distance_check = current_actor_ai.is_distance_in_running(distance_to_target)
+        
+        if current_actor_ai.is_mood_resting:
+            self.move_actor(-1)
+        elif current_actor_ai.is_mood_normal():
+            if current_actor_ai.is_behavior_chaser():
+                if distance_check == 0 or distance_check == -1:
+                    self.move_actor(-1)
+                else:
+                    move_to_position = path_to_target[1]
+                    direction = common.get_direction(current_actor_position, move_to_position)
+                    self.move_actor(direction)
+        
+            elif current_actor_ai.is_behavior_runner():
+                if distance_check == -1:
+                    #too close, run away
+                    #go opposite direction of first point of path
+                    move_to_position = path_to_target[1]
+                    direction = common.get_direction(current_actor_position, move_to_position)
+                    inverted_direction = common.invert_oclock(direction)
+                    if not self.move_actor(inverted_direction):
+                        pass
+                    elif not self.move_actor(inverted_direction + 2):
+                        pass
+                    elif not self.move_actor(inverted_direction - 2):
+                        pass
+                    else:
+                        self.move_actor(-1)
+                    
+                elif distance_check == 0:
+                    self.move_actor(-1)
+                else:
+                    move_to_position = path_to_target[1]
+                    direction = common.get_direction(current_actor_position, move_to_position)
+                    self.move_actor(direction)
     
     #############
     # map stuff #

@@ -192,6 +192,11 @@ class landscape(object):
     # pathfinding and related goodies #
     ###################################
     
+    def is_open_path(p0, p1):
+        #if a path is found from p0 to p1 that is equal to the distance of the
+        #points, then there is an open path.
+        return len(self.pathfind(p0, p1)) - 1 == common.hex_distance(p0, p1)
+    
     #a* based
     def pathfind(self, p0, p1):
         open_list = [p0]
