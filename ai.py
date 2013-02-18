@@ -39,8 +39,6 @@ class ai(object):
         self.mood = 'afraid'
     def set_mood_berserk(self):
         self.mood = 'berserk'
-    def set_mood_chase(self):
-        self.mood = 'chase'
     def set_mood_resting(self):
         self.mood = 'resting'
     
@@ -50,7 +48,6 @@ class ai(object):
         return self.mood == 'afraid'
     def is_mood_berserk(self):
         return self.mood == 'berserk'
-    def is_mood_chase(self):
-        return self.mood == 'chase'
     def is_mood_resting(self):
         return self.mood == 'resting'
+

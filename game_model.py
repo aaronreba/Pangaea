@@ -6,6 +6,8 @@ import item
 import player
 import terraform
 import copy
+import ai
+import random
 
 class level(object):
     def __init__(self):
@@ -289,30 +291,10 @@ class model(object):
         return moved
     
     def ai_action(self):
-        #behavior: aggressive, runner
-        #mood normal, afraid, beserk, resting
-        
-        #consider behavior, style, mood then determine action
-        
         #consider that there may be special actions an ai can do:
         #1. running away from a time bomb
         #2. setting a trap
         #3. etc
-        
-        #if mood == normal:
-            #if behavior == aggressive:
-                #if in range, attack
-                #else, run straight to target
-            #elif behavior == runner:
-                #if at furthest possible range, attack
-                #else, run away
-        #elif mood == berserk:
-            #if in range, attack
-            #else, run straight to target
-        #elif mood == afraid:
-            #run away from target
-        #elif mood == resting:
-            #do nothing
         
         current_actor_ai = self.current_actor.ai
         
@@ -326,39 +308,59 @@ class model(object):
         
         distance_check = current_actor_ai.is_distance_in_running(distance_to_target)
         
-        if current_actor_ai.is_mood_resting:
+        def stand_still():
             self.move_actor(-1)
+        
+        def proceed():
+            move_to_position = path_to_target[1]
+            direction = common.get_direction(current_actor_position, move_to_position)
+            self.move_actor(direction)
+        
+        def run_away():
+            move_to_position = path_to_target[1]
+            direction = common.get_direction(current_actor_position, move_to_position)
+            inverted_direction = common.invert_oclock(direction)
+            side_step = [-2, 2]
+            random.shuffle(side_step)
+            if self.move_actor(inverted_direction):
+                pass
+            elif self.move_actor(inverted_direction + side_step[0]):
+                pass
+            elif self.move_actor(inverted_direction - side_step[1]):
+                pass
+            else:
+                self.move_actor(-1)
+        
+        #resting, unaware of anything to attack.
+        if current_actor_ai.is_mood_resting():
+            self.move_actor(-1)
+        
+        #normal, aware of something to attack.
         elif current_actor_ai.is_mood_normal():
             if current_actor_ai.is_behavior_chaser():
                 if distance_check == 0 or distance_check == -1:
-                    self.move_actor(-1)
+                    stand_still()
                 else:
-                    move_to_position = path_to_target[1]
-                    direction = common.get_direction(current_actor_position, move_to_position)
-                    self.move_actor(direction)
+                    proceed()
         
             elif current_actor_ai.is_behavior_runner():
                 if distance_check == -1:
-                    #too close, run away
-                    #go opposite direction of first point of path
-                    move_to_position = path_to_target[1]
-                    direction = common.get_direction(current_actor_position, move_to_position)
-                    inverted_direction = common.invert_oclock(direction)
-                    if not self.move_actor(inverted_direction):
-                        pass
-                    elif not self.move_actor(inverted_direction + 2):
-                        pass
-                    elif not self.move_actor(inverted_direction - 2):
-                        pass
-                    else:
-                        self.move_actor(-1)
-                    
+                    run_away()
                 elif distance_check == 0:
-                    self.move_actor(-1)
+                    stand_still()
                 else:
-                    move_to_position = path_to_target[1]
-                    direction = common.get_direction(current_actor_position, move_to_position)
-                    self.move_actor(direction)
+                    proceed()
+        
+        #afraid, run away
+        elif current_actor_ai.is_mood_afraid():
+            run_away()
+        
+        #berserk, chase
+        elif current_actor_ai.is_mood_berserk():
+            if distance_to_target == 1:
+                stand_still()
+            else:
+                proceed()
     
     #############
     # map stuff #

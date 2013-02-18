@@ -38,7 +38,6 @@ class controller(object):
                     self.model.actors[-1].ai.set_mood_normal()
                 elif event.key == K_4:
                     self.model.actors[-1].ai.target = self.model.human_actor
-                    self.model.actors[-1].ai.set_behavior_runner()
                 elif event.key == K_0:
                     self.model.initialize_map()
                 

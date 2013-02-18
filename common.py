@@ -140,11 +140,7 @@ def get_direction(p0, p1):
             return 11
 
 def invert_oclock(invert_me):
-    invert_dict = {}
-    invert_dict[1] = 7
-    invert_dict[3] = 9
-    invert_dict[5] = 11
-    invert_dict[7] = 1
-    invert_dict[9] = 3
-    invert_dict[11] = 5
-    return invert_dict[invert_me]
+    if invert_me < 6:
+        return invert_me + 6
+    else:
+        return invert_me - 6
