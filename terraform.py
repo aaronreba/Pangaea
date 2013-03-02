@@ -58,7 +58,7 @@ class tile(object):
             
             self.items = []
             
-            self.images = []
+            self.terrain_image_name = 'green_hex'
         
         self.actors = []
     
@@ -76,6 +76,8 @@ class tile(object):
         self.items = information[2]
         
         self.images = information[3]
+        
+        self.terrain_image_name = 'green_hex'
 
 class landscape(object):
     def __init__(self, level):

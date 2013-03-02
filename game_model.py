@@ -16,8 +16,8 @@ class level(object):
         self.human_actor_info = None
 
 class model(object):
-    def __init__(self):
-        # self.view = view
+    def __init__(self, view):
+        self.view = view
         self.run = True
         
         self.players = []
@@ -530,11 +530,10 @@ class model(object):
     # updating view #
     #################
     
-    # def set_background(self, new_background):
-    #     self.view.background_map = new_background
-    #     self.view.camera_x = None
-    #     self.view.camera_y = None
-    
+    def set_background(self, new_background):
+        self.view.background_map = new_background
+        self.view.camera_x = None
+        self.view.camera_y = None
     
     ##################
     # updating model #

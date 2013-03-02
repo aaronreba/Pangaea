@@ -26,35 +26,35 @@ class states(object):
         self.screen.fill((0, 0, 0, 255), special_flags=pygame.BLEND_RGBA_MAX)
         
         if self.current_state == 'main_menu':
-            # self.view = game_view.view(self.screen, display)
-            self.model = game_model.model()
+            self.view = game_view.view(self.screen, display)
+            self.model = game_model.model(self.view)
             self.controller = main_menu.controller(self.model, pygame.event)
-            # self.view.model = self.model
+            self.view.model = self.model
         
         elif self.current_state == 'game':
-            # self.view = game_view.view(self.screen, display)
-            self.model = game_model.model()
+            self.view = game_view.view(self.screen, display)
+            self.model = game_model.model(self.view)
             self.controller = game_controller.controller(self.model, pygame.event)
-            # self.view.model = self.model
+            self.view.model = self.model
         
         elif self.current_state == 'test_game':
-            # self.view = game_view.view(self.screen, display)
-            self.model = game_model.model()
+            self.view = game_view.view(self.screen, display)
+            self.model = game_model.model(self.view)
             self.controller = game_controller_test.controller(self.model, pygame.event)
-            # self.view.model = self.model
+            self.view.model = self.model
             
             self.model.landscape = terraform.make_terrain_test('basic_grass')
             
-            # self.view.draw_map()
+            self.view.draw_map()
     
     def unload_state(self):
-        # del self.view
+        del self.view
         del self.model
         del self.controller
     
     def update(self, dt):
         self.model.update(dt)
-        # self.view.update()
+        self.view.update()
         control_result = self.controller.control()
         
         #control_result is None most of the time.
