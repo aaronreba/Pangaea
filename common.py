@@ -1,7 +1,12 @@
-#!/usr/bin/env python
-
 from math import sqrt
 from math import ceil
+
+# ( 0,  0)          ( 1,  0)          ( 2,  0)         
+#          ( 0,  1)          ( 1,  1)          ( 2,  1)
+# ( 0,  2)          ( 1,  2)          ( 2,  2)         
+#          ( 0,  3)          ( 1,  3)          ( 2,  3)
+# ( 0,  4)          ( 1,  4)          ( 2,  4)         
+
 
 class CommonException(Exception):
     def __init__(self, msg):
@@ -138,6 +143,38 @@ def get_direction(p0, p1):
             return 9
         else:
             return 11
+
+def get_coordinates_from_direction(initial_coordinates, direction):
+    x, y = initial_coordinates
+    if y & 1 == 0:
+        #y is even
+        if direction == 1:
+            dx, dy = 0, -1
+        elif direction == 3:
+            dx, dy = 1, 0
+        elif direction == 5:
+            dx, dy = 0, 1
+        elif direction == 7:
+            dx, dy = -1, 1
+        elif direction == 9:
+            dx, dy = -1, 0
+        elif direction == 11:
+            dx, dy = -1, -1
+    else:
+        if direction == 1:
+            dx, dy = 1, -1
+        elif direction == 3:
+            dx, dy = 1, 0
+        elif direction == 5:
+            dx, dy = 1, 1
+        elif direction == 7:
+            dx, dy = 0, 1
+        elif direction == 9:
+            dx, dy = -1, 0
+        elif direction == 11:
+            dx, dy = 0, -1
+    
+    return (x + dx, y + dy)
 
 def invert_oclock(invert_me):
     if invert_me < 6:

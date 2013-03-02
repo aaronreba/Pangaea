@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 from pygame import *
 
 class controller(object):

@@ -1,6 +1,6 @@
-#!/usr/bin/env python
-
 from pygame import *
+
+import ability
 
 class controller(object):
     def __init__(self, model, event_object):
@@ -9,6 +9,8 @@ class controller(object):
         self.event_object = event_object
         
         self.key_map = {}
+        
+        self.accepting_ability_direction = False
         
         direction_key_map = {}
         direction_key_map[K_s] = -1
@@ -83,7 +85,19 @@ class controller(object):
                 #move actor
                 elif event.key in self.direction_key_map:
                     if self.model.current_actor != None:
-                        self.model.move_actor(self.direction_key_map[event.key])
+                        obtained_direction = self.direction_key_map[event.key]
+                        if not self.accepting_ability_direction:
+                            self.model.move_actor(obtained_direction)
+                        else:
+                            self.model.use_ability(obtained_direction, self.will_use_ability)
+                            self.accepting_ability_direction = False
+                
+                #ability actions
+                elif event.key == K_r:
+                    #hoovy strike
+                    if self.model.current_actor != None:
+                        self.accepting_ability_direction = True
+                        self.will_use_ability = ability.heavy_strike
                 
                 #quit
                 elif event.key == K_q:

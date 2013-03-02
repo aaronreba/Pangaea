@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 import actor
 import common
 import item
@@ -8,6 +6,7 @@ import terraform
 import copy
 import ai
 import random
+import ability
 
 class level(object):
     def __init__(self):
@@ -197,6 +196,12 @@ class model(object):
         for each_actor in self.actors[:-1]:
             each_actor.speed_time = int(each_actor.speed_time * self.speed_lcm)
     
+    def kill_actor(self, kill_me):
+        #remove from tile and model actor list
+        self.remove_actor_by_id(kill_me.id_number)
+        self.landscape.landscape[kill_me.position].occupied = False
+        self.landscape.landscape[kill_me.position].actors.pop()
+    
     ##########################
     # modifying player/actor #
     ##########################
@@ -289,6 +294,23 @@ class model(object):
                     self.do_full_extension_retraction()
         
         return moved
+    
+    def use_ability(self, direction, ability):
+        target_coordinates = common.get_coordinates_from_direction(self.human_actor.position, direction)
+        target_tile = self.landscape.landscape[target_coordinates]
+        if target_tile.occupied:
+            damage_modifier = ability.modifiers['damage_modifier']
+            damage = -self.human_actor.make_damage(modifier=damage_modifier)
+            target_actor = target_tile.actors[0]
+            target_actor.modify_health(damage)
+            
+            if target_actor.current_health <= 0:
+                self.kill_actor(target_actor)
+            
+            self.next_turn()
+            return True
+        else:
+            return False
     
     def ai_action(self):
         #consider that there may be special actions an ai can do:

@@ -1,12 +1,10 @@
-#!/usr/bin/env python
-
 from __future__ import division
-
-from random import randint
 
 import pygame
 from math import sqrt
 from math import ceil
+
+import random
 
 import common
 
@@ -45,7 +43,7 @@ class actor():
         #health
         #whatever the fuck agility does (crit?)
         #defense
-        self.stats['power']     = 10
+        self.stats['power']     = 1000
         self.stats['agility']   = 10
         self.stats['vitality']  = 10
         self.stats['toughness'] = 10
@@ -60,6 +58,14 @@ class actor():
         #speed is how often actor moves
         self.speed = 100
         self.speed_time = None
+        
+        self.current_health = self.stats['health']
+        
+        ############
+        # statuses #
+        ############
+        
+        self.statuses = {}
         
         #########
         # items #
@@ -137,7 +143,7 @@ class actor():
         
         return\
 'id: {9}\n\
-health: {0}, mana: {1}\n\
+health: {10}/{0}, mana: {1}\n\
 power: {2}, toughness: {3}, agility: {4}, vitality: {5}\n\
 inventory: {6}\n\
 equipment: {7}\n\
@@ -151,7 +157,8 @@ position: {8}'.format(
             inventory_string,
             equipment_string,
             str(self.position),
-            str(self.id_number))
+            str(self.id_number),
+            self.current_health)
     
     def __eq__(self, other):
         if type(self) == type(other):
@@ -236,6 +243,24 @@ position: {8}'.format(
     
     def remove_gold(self, gold):
         self.gold -= gold
+    
+    def modify_health(self, amount):
+        #returns false on death
+        #returns true otherwise
+        self.current_health += amount
+        if self.current_health < 0:
+            return False
+        elif self.current_health > self.stats['health']:
+            self.current_health = self.stats['health']
+        return True
+    
+    def make_damage(self, modifier=1.0, cone=10.0):
+        damage_value = self.stats['power'] * modifier
+        random_max = damage_value * cone
+        random_modifier = random.uniform(-random_max, random_max)
+        damage_value += random_modifier
+        damage_value = round(damage_value)
+        return int(damage_value)
     
     # def initialize_sprite(self, group):
     #     pygame.sprite.Sprite.__init__(self, group)

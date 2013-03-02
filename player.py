@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 class player(object):
     def __init__(self, name, player_type):
         self.name = name

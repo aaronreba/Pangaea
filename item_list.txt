@@ -23,20 +23,6 @@ Red Amulet, necklace, Z, , neck, 1, power:2, agility:2
 Blue Amulet, necklace, Z, , neck, 1, vitality:2, toughness:2
 Wedding Necklace, necklace, Z, , neck, 1, power:1, agility:1, vitality:1, toughness:1
 
-Iron Great Sword, sword, I, , 2hand, 1, power:10, agility:4
-Iron Spear, spear, I, , 2hand, 1, power:10, vitality:4
+Iron Great Sword, heavy_melee, I, , 2hand, 1, power:10, agility:4
+Iron Spear, long_melee, I, , 2hand, 1, power:10, vitality:4
 
-Iron Sword, sword, I, , 1hand, 1, power:5, agility:2
-Iron Shield, shield, I, , 1hand, 1, vitality:2, toughness:5
-
-Single Shot Rifle, gun, O, , 2hand, 1, power:10, agility:4
-Maple Bow, bow, P, , 2hand, 1, power:10, vitality:2, agility:2
-Maple Crossbow, bow, P, , 2hand, 1, power:10, vitality:4
-
-Single Shot Pistol, gun, O, , 1hand, 1, power:5, agility:2
-
-Iron Dagger, dagger, I, , 1hand, 1, power:1, agility:6
-
-Maple Staff, staff, I, , 2hand, 1, power:10, vitality:4
-
-Maple Wand, wand, I, , 1hand, 1, power:6, agility:1
