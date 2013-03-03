@@ -275,11 +275,7 @@ class model(object):
             self.landscape.landscape[x + dx, y + dy].occupied = True
             self.landscape.landscape[x + dx, y + dy].actors.append(self.current_actor)
             
-            # self.view.move_actor_image(self.current_actor, x + dx, y + dy)
-            
             self.current_actor.position = (x + dx, y + dy)
-            
-            self.next_turn()
             
             ###################################################
             # check if human actor has moved into a new chunk #
@@ -292,6 +288,24 @@ class model(object):
                 if (x / chunk_size) != (x + dx / chunk_size) or\
                    (y / chunk_size) != (y + dy / chunk_size):
                     self.do_full_extension_retraction()
+                    
+                    #redraw map
+                    self.view.draw_map()
+            
+            ###############
+            # update view #
+            ###############
+            
+            #updating view after all model things have been updated
+            
+            #update image
+            # self.view.move_actor_image(self.current_actor, x + dx, y + dy)
+            
+            #center map if human moved
+            if self.current_actor == self.human_actor:
+                self.view.center_map(self.human_actor)
+            
+            self.next_turn()
         
         return moved
     
@@ -562,5 +576,10 @@ class model(object):
         #     each_actor.update_chain(dt)
         
         if self.current_actor.owner_type == 'computer':
-            self.ai_action()
+            if self.current_actor.ai.target != None:
+                self.ai_action()
+            elif self.move_actor(9):
+                pass
+            elif self.move_actor(3):
+                pass
 

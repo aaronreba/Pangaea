@@ -64,30 +64,29 @@ class view(object):
         for map_coord in self.model.landscape.landscape:
             terrain_type = self.model.landscape.landscape[map_coord].terrain_image_name
             self.terrain_images.load_images(terrain_type)
-          
+            
             if map_coord[1] & 1 == 0:
                 x_offset = 0
             else:
                 x_offset = 22.5
-          
+            
             blit_coords = (map_coord[0] * 45 + x_offset, map_coord[1] * 33)
             self.terrain.blit(self.terrain_images.images[terrain_type],
                               blit_coords)
-  
+    
+    def center_map(self, upon_actor):
+        pass
+    
     def draw(self):
-        #redraw tiles that are currently occupied x
-        #redraw actors y
-        #projectiles x
-      
         self.screen.blit(self.background, (0, 0))
         self.screen.blit(self.terrain, (0, 0))
-      
+        
         self.actor_sprite_group.draw(self.screen)
         self.effect_sprite_group.draw(self.screen)
         self.gui_group.draw(self.screen)
         self.text_group.draw(self.screen)
   
     def update(self):
-        pass
         self.draw()
         self.display.flip()
+
