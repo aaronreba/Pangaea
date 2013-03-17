@@ -1,0 +1,1 @@
+background_color = (0x10, 0, 0x18)

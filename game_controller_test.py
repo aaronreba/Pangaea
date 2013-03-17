@@ -35,7 +35,7 @@ class controller(object):
                 elif event.key == K_2:
                     self.model.add_player('Bill Gates', 'computer')
                 elif event.key == K_3:
-                    self.model.add_actor(self.model.actor_id_counter, 'Doggy2', 'dog', 'Bill Gates', 'computer', (6, 2))
+                    self.model.add_actor(self.model.actor_id_counter, 'Doggy2', 'dog', 'Bill Gates', 'computer', (3, 2))
                     self.model.actors[-1].speed = 4
                     self.model.actors[-1].ai.set_mood_normal()
                 elif event.key == K_4:

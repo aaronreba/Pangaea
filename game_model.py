@@ -71,6 +71,10 @@ class model(object):
         
         self.generate_items()
         
+        self.view.landscape = self.landscape
+        self.view.draw_map()
+        self.view.center_map(self.human_actor)
+        
         self.initialized = True
     
     ###################
@@ -161,7 +165,7 @@ class model(object):
         self.landscape.landscape[x, y].occupied = True
         self.landscape.landscape[x, y].actors.append(new_actor)
         
-        # self.view.add_actor(new_actor)
+        self.view.add_actor(new_actor)
         
         for i, each_player in enumerate(self.players):
             if each_player.name == owner:
@@ -289,8 +293,6 @@ class model(object):
                    (y / chunk_size) != (y + dy / chunk_size):
                     self.do_full_extension_retraction()
                     
-                    #redraw map
-                    self.view.draw_map()
             
             ###############
             # update view #
@@ -304,6 +306,9 @@ class model(object):
             #center map if human moved
             if self.current_actor == self.human_actor:
                 self.view.center_map(self.human_actor)
+            
+            #redraw map
+            self.view.draw_map()
             
             self.next_turn()
         

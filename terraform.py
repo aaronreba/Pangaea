@@ -12,11 +12,11 @@ import common
 #all chunks within this many distance units from the human must be
 #generated whenever a generation is requested
 #testing: 30 chunks
-do_chunk_generate_distance = 2
+do_chunk_generate_distance = 1
 
 #when a deletion is requested, chunks within this many distance units
 #from the human must be deleted
-do_chunk_delete_distance = 2
+do_chunk_delete_distance = 1
 
 #a generation is requested when the human is within this many
 #chunks from the edge of the world.
@@ -24,7 +24,7 @@ do_chunk_delete_distance = 2
 #another check for land is made. if that request can be carried out,
 #it will.
 #testing: 12 chunks
-check_chunk_generate_distance = 2
+check_chunk_generate_distance = 1
 
 chunk_size = 5
 
@@ -293,14 +293,14 @@ def make_terrain_test(scheme):
     #10x15 map
     if scheme == 'basic_grass':
         this_landscape = landscape(1)
-        for x in xrange(10):
-            for y in xrange(15):
+        this_landscape.landscape_size = ((0, 5), (0, 5))
+        for x in xrange(5):
+            for y in xrange(5):
                 this_tile = tile((('grass', 0, 0, 0), [True, False, True, False], [], []))
                 this_landscape.landscape[x, y] = this_tile
-        for x in xrange(2):
-            for y in xrange(3):
+        for x in xrange(1):
+            for y in xrange(1):
                 this_landscape.landscape_chunk_mask[x, y] = (0, 0, 0)
-        this_landscape.landscape_size = ((0, 10), (0, 15))
         
         #generate 2 cities: in range, and out of range
         add_this_city = city(((1, 1), (2, 1), (1, 2), (2, 2)))
@@ -449,30 +449,22 @@ def extend_map_using_ungenerated(
         else:
             generate_for_touch = 4
     
-    min_x = None
-    max_x = None
-    min_y = None
-    max_y = None
+    min_x = this_landscape.landscape.keys()[0][0]
+    max_x = this_landscape.landscape.keys()[0][0]
+    min_y = this_landscape.landscape.keys()[0][1]
+    max_y = this_landscape.landscape.keys()[0][1]
     
     for position in this_landscape.landscape.keys():
-        if min_x == None:
-            min_x = position[0]
-        elif min_x > position[0]:
+        if min_x > position[0]:
             min_x = position[0]
         
-        if max_x == None:
-            max_x = position[0]
-        elif max_x < position[0]:
+        if max_x < position[0]:
             max_x = position[0]
         
-        if min_y == None:
-            min_y = position[1]
-        elif min_y > position[1]:
+        if min_y > position[1]:
             min_y = position[1]
         
-        if max_y == None:
-            max_y = position[1]
-        elif max_y < position[1]:
+        if max_y < position[1]:
             max_y = position[1]
     
     return ((min_x, max_x + 1), (min_y, max_y + 1))
