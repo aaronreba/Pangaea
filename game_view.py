@@ -69,7 +69,7 @@ class view(object):
         
         self.terrain.fill(constants.background_color)
         for map_coord in self.model.landscape.landscape:
-            terrain_type = self.model.landscape.landscape[map_coord].terrain_image_name
+            terrain_type = self.model.landscape.landscape[map_coord].terrain_type
             self.terrain_images.load_images(terrain_type)
             
             tile_draw_dimensions = self.tile_draw_dimensions
@@ -124,8 +124,7 @@ class view(object):
         
         if actor_position[1] & 2 == 1:
             centered_actor_offset = (centered_actor_offset[0], centered_actor_offset[1] - half_tile_draw_x)
-        print landscape_bounds, actor_position
-        print centered_actor_offset
+        
         self.centered_actor_offset = centered_actor_offset
     
     def draw(self):

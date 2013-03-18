@@ -46,10 +46,13 @@ class tile(object):
         if information != None:
             self.write(information)
         else:
-            self.tile_type = None
             self.temperature = None
             self.precipitation = None
             self.psych = None
+            
+            self.terrain_image_name = None
+            
+            self.terrain_type = None
             
             self.walkable = None
             self.occupied = None
@@ -57,16 +60,19 @@ class tile(object):
             self.interactable = None
             
             self.items = []
-            
-            self.terrain_image_name = 'green_hex'
         
         self.actors = []
     
     def write(self, information):
-        self.tile_type = information[0][0]
-        self.temperature = information[0][1]
-        self.precipitation = information[0][2]
-        self.psych = information[0][3]
+        self.temperature = information[0][0]
+        self.precipitation = information[0][1]
+        self.psych = information[0][2]
+        
+        for biome in biome_graph:
+            if biome[0][0] <= self.temperature <= biome[0][1] and\
+               biome[1][0] <= self.temperature <= biome[1][1]:
+                self.terrain_type = biome_graph[biome]
+                break
         
         self.walkable     = information[1][0]
         self.occupied     = information[1][1]
@@ -76,8 +82,6 @@ class tile(object):
         self.items = information[2]
         
         self.images = information[3]
-        
-        self.terrain_image_name = 'green_hex'
 
 class landscape(object):
     def __init__(self, level):
@@ -296,7 +300,7 @@ def make_terrain_test(scheme):
         this_landscape.landscape_size = ((0, 5), (0, 5))
         for x in xrange(5):
             for y in xrange(5):
-                this_tile = tile((('grass', 0, 0, 0), [True, False, True, False], [], []))
+                this_tile = tile(((0, 0, 0), [True, False, True, False], [], []))
                 this_landscape.landscape[x, y] = this_tile
         for x in xrange(1):
             for y in xrange(1):
@@ -339,41 +343,6 @@ def make_terrain_test(scheme):
         this_landscape.portals.append(add_this_portal)
         
         return this_landscape
-    
-    elif scheme == '2_grass':
-        this_landscape = landscape(2)
-        for x in xrange(5):
-            for y in xrange(5):
-                this_tile = tile((('grass', 0, 0, 0), [True, False, True, False], [], []))
-                this_landscape.landscape[x, y] = this_tile
-        for x in xrange(1):
-            for y in xrange(1):
-                this_landscape.landscape_chunk_mask[x, y] = (0, 0, 0)
-        this_landscape.landscape_size = ((0, 5), (0, 5))
-        
-        add_this_portal = portal((2, 1), 'up')
-        this_landscape.portals.append(add_this_portal)
-        add_this_portal = portal((3, 1), 'down')
-        this_landscape.portals.append(add_this_portal)
-        
-        return this_landscape
-    
-    elif scheme == '3_grass':
-        this_landscape = landscape(3)
-        for x in xrange(5):
-            for y in xrange(5):
-                this_tile = tile((('grass', 0, 0, 0), [True, False, True, False], [], []))
-                this_landscape.landscape[x, y] = this_tile
-        for x in xrange(1):
-            for y in xrange(1):
-                this_landscape.landscape_chunk_mask[x, y] = (0, 0, 0)
-        this_landscape.landscape_size = ((0, 5), (0, 5))
-        
-        add_this_portal = portal((3, 2), 'down')
-        this_landscape.portals.append(add_this_portal)
-        
-        return this_landscape
-    
 
 #get ungenerated in given distance
 def find_immediate_ungenerated(
@@ -593,11 +562,6 @@ def generate_chunk(
                 if -4 <= new_value <= 4:
                     new_tile[change_field] = new_value
             
-            for biome in biome_graph:
-                if biome[0][0] <= new_tile[0] <= biome[0][1] and\
-                   biome[1][0] <= new_tile[1] <= biome[1][1]:
-                    tile_type = biome_graph[biome]
-                    break
             #map values:
             #(
             #('type', temp, precip, ??),
@@ -605,7 +569,7 @@ def generate_chunk(
             #[items],
             #[images in order of layering]
             #)
-            this_landscape.landscape[x, y] = tile(((tile_type, new_tile[0], new_tile[1], new_tile[2]), [True, False, True, False], [], []))
+            this_landscape.landscape[x, y] = tile(((new_tile[0], new_tile[1], new_tile[2]), [True, False, True, False], [], []))
     
     #post processing to add land features (cities, doodads, etc)
     
