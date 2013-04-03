@@ -54,7 +54,7 @@ class states(object):
     
     def update(self, dt):
         self.model.update(dt)
-        self.view.update()
+        self.view.update(dt)
         control_result = self.controller.control()
         
         #control_result is None most of the time.

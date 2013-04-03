@@ -10,7 +10,7 @@ import common
 
 import ai
 
-MS_PER_FRAME = 1000
+MS_PER_FRAME = 100
 
 class actor(pygame.sprite.Sprite):
     def __init__(self, id_number, name, actor_type, owner, owner_type):
@@ -125,12 +125,12 @@ class actor(pygame.sprite.Sprite):
         # self.visible = False
         
         #this is for the view displaying something walking
-        # self.walking_speed = 160 #value in pixels
-        # self.walking_destination = (0, 0)
-        # self.walking_vector = (0, 0)
+        self.walking_speed = 160 #value in pixels
+        self.walking_destination = (0, 0)
+        self.walking_vector = (0, 0)
         
         #tuple of (True, False). True = positive direction, False = negative
-        # self.walking_direction_boolean = None
+        self.walking_direction_boolean = None
     
     def __str__(self):
         inventory_string = ' '.join([x.name for x in self.inventory])
@@ -299,29 +299,23 @@ position: {8}'.format(
             self.decimal_rect = [0, 0]
       
     
-    def set_walk(self, newx=None, newy=None):
-        x = self.x
-        y = self.y
-      
-        if newx == None and newy == None:
-            current_actor_pos = (self.rect.left, self.rect.top)
-            new_actor_pos = common.screen_coords_from_map(x, y)
-        else:
-            current_actor_pos = common.screen_coords_from_map(x, y)
-            new_actor_pos = common.screen_coords_from_map(newx, newy)
-          
-      
-        move_x = new_actor_pos[0] - current_actor_pos[0]
-        move_y = new_actor_pos[1] - current_actor_pos[1]
-      
-        self.walking_destination = new_actor_pos
+    def set_walk(self, new_location=None):
+        #set walk to SCREEN COORDINATES
+        current_actor_coordinates = (self.rect[0], self.rect[1])
+        if new_location == None:
+            new_location = self.walking_destination
+        
+        move_x = new_location[0] - current_actor_coordinates[0]
+        move_y = new_location[1] - current_actor_coordinates[1]
+        
+        self.walking_destination = new_location
         self.walking_destination = (int(self.walking_destination[0]),
                                     int(self.walking_destination[1]))
-      
-        self.walking_vector = common.vector_to_pos(current_actor_pos,
-                                                   new_actor_pos,
+        
+        self.walking_vector = common.vector_to_pos(current_actor_coordinates,
+                                                   new_location,
                                                    self.walking_speed)
-      
+        
         if self.walking_vector[0] > 0:
             bx = True
         else:
@@ -330,7 +324,7 @@ position: {8}'.format(
             by = True
         else:
             by = False
-      
+        
         self.walking_direction_boolean = (bx, by)
     
     def set_location(self, (x, y)):
@@ -362,7 +356,7 @@ position: {8}'.format(
             self.current_act_time -= self.current_act_alotted_time
             self.current_act_frame_index += 1
             if self.current_act_frame_index == self.current_act_animation_length:
-                self.current_act_animation_index = randint(0, self.current_act_number_of_animations - 1)
+                self.current_act_animation_index = random.randint(0, self.current_act_number_of_animations - 1)
                 self.current_act_frame_index = 0
         self.image = self.image_chains[self.current_act][self.current_act_animation_index][self.current_act_frame_index]
       
@@ -386,9 +380,6 @@ position: {8}'.format(
       
         self.decimal_rect[0] += movex
         self.decimal_rect[1] += movey
-      
-        int_decimal_rect_x
-        int_decimal_rect_y
       
         if bx:
             int_decimal_rect_x = int(self.decimal_rect[0])

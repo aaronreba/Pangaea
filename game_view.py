@@ -53,16 +53,21 @@ class view(object):
     def remove_actor(self, remove_me):
         self.actor_sprite_group.remove(remove_me)
     
-    def move_actor_image(self, actor, newx, newy):
+    def move_actor_image(self, actor, new_coordinates, screen_converted=False):
         #the specified actor's image has moved
         #make it walk
         
+        if not screen_converted:
+            new_coordinates = self.screen_coordinates_from_map_position(new_coordinates)
+        
         if actor.current_act == 'walk':
-            #set it to current destination
+            #currently walking,
+            #set it to current destination,
+            #then it will continue walking from its now old destination
             actor.rect.left = actor.walking_destination[0]
             actor.rect.top = actor.walking_destination[1]
         
-        actor.set_walk(newx, newy)
+        actor.set_walk(new_coordinates)
         
         actor.change_act('walk')
     
@@ -119,10 +124,8 @@ class view(object):
         
         #move actor's image rect to center
         old_rect = self.centered_actor.rect
-        self.centered_actor.rect = ((half_screen_x - half_tile_x,
-                                     half_screen_y - half_tile_y,
-                                     old_rect[2],
-                                     old_rect[3]))
+        self.centered_actor.rect.left = half_screen_x - half_tile_x
+        self.centered_actor.rect.top = half_screen_y - half_tile_y
         
         #calculate terrain offset given actor's position
         centered_actor_offset = (half_screen_x - half_tile_x - tile_offset_x - stagger_offset,
@@ -133,6 +136,30 @@ class view(object):
         
         self.centered_actor_offset = centered_actor_offset
     
+    def screen_coordinates_from_map_position(self, map_position):
+        centered_actor = self.centered_actor
+        
+        x_diff = map_position[0] - self.centered_actor.position[0]
+        x_offset = x_diff * self.tile_draw_dimensions[0]
+        
+        #odd x offset
+        this_actor_odd_y = map_position[1] & 1
+        centered_actor_odd_y = centered_actor.position[1] & 1
+        if this_actor_odd_y != centered_actor_odd_y:
+            if centered_actor_odd_y:
+                x_offset -= (self.tile_draw_dimensions[0] / 2.0)
+            else:
+                x_offset += (self.tile_draw_dimensions[0] / 2.0)
+        
+        screen_x = self.centered_actor.rect[0] + x_offset
+        
+        y_diff = map_position[1] - self.centered_actor.position[1]
+        y_offset = y_diff * self.tile_draw_dimensions[1]
+        
+        screen_y = self.centered_actor.rect[1] + y_offset
+        
+        return (screen_x, screen_y)
+    
     def place_actors(self, place_me=None):
         centered_actor = self.centered_actor
         
@@ -142,32 +169,11 @@ class view(object):
             draw_me = [place_me]
         
         for each_actor in draw_me:
-            actor_position = each_actor.position
-            
-            x_diff = actor_position[0] - self.centered_actor.position[0]
-            x_offset = x_diff * self.tile_draw_dimensions[0]
-            
-            #odd x offset
-            this_actor_odd_y = actor_position[1] & 1
-            centered_actor_odd_y = centered_actor.position[1] & 1
-            if this_actor_odd_y != centered_actor_odd_y:
-                if centered_actor_odd_y:
-                    x_offset -= (self.tile_draw_dimensions[0] / 2.0)
-                else:
-                    x_offset += (self.tile_draw_dimensions[0] / 2.0)
-            
-            x_offset += self.centered_actor.rect[0]
-            
-            y_diff = actor_position[1] - self.centered_actor.position[1]
-            y_offset = y_diff * self.tile_draw_dimensions[1]
-            
-            y_offset += self.centered_actor.rect[1]
+            screen_coordinates = self.screen_coordinates_from_map_position(each_actor.position)
             
             old_rect = each_actor.rect
-            each_actor.rect = (x_offset,
-                               y_offset,
-                               old_rect[2],
-                               old_rect[3])
+            each_actor.rect.left = screen_coordinates[0]
+            each_actor.rect.top = screen_coordinates[1]
 
     def draw(self):
         self.screen.blit(self.background, (0, 0))
@@ -178,7 +184,13 @@ class view(object):
         self.gui_group.draw(self.screen)
         self.text_group.draw(self.screen)
   
-    def update(self):
+    def update(self, dt):
+        #update animations
+        for each_actor in self.model.actors:
+            each_actor.update_chain(dt)
+        
+        #draw sprites as they are now
         self.draw()
+        
         self.display.flip()
 

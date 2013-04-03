@@ -236,6 +236,7 @@ class model(object):
             self.landscape.landscape[x + dx, y + dy].occupied = True
             self.landscape.landscape[x + dx, y + dy].actors.append(self.current_actor)
             
+            old_position = (x, y)
             self.current_actor.position = (x + dx, y + dy)
             
             ###################################################
@@ -249,7 +250,6 @@ class model(object):
                 if (x / chunk_size) != (x + dx / chunk_size) or\
                    (y / chunk_size) != (y + dy / chunk_size):
                     self.do_full_extension_retraction()
-                    
             
             ###############
             # update view #
@@ -265,9 +265,11 @@ class model(object):
                 self.view.center_map(self.human_actor)
                 self.view.place_actors()
             
-            #redraw this actor
+            #animate this actor
             else:
-                self.view.place_actors(self.current_actor)
+                self.view.move_actor_image(self.current_actor,
+                                           self.current_actor.position)
+                #self.view.place_actors(self.current_actor)
             
             #redraw map
             self.view.draw_map()
@@ -542,9 +544,6 @@ class model(object):
         self.run = False
     
     def update(self, dt):
-        # for each_actor in self.actors:
-        #     each_actor.update_chain(dt)
-        
         if self.current_actor.owner_type == 'computer':
             if self.current_actor.ai.target != None:
                 self.ai_action()

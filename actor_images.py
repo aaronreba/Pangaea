@@ -46,14 +46,12 @@ class actor_images(object):
                     act,
                     short_line
                 )).convert_alpha()
-                if short_line[0] == str(chain_number):
-                    frame_chain.append(frame)
-                else:
+                
+                if short_line[0] != str(chain_number):
                     self.images[actor_type][act].append(frame_chain)
                     frame_chain = []
                     chain_number += 1
                 frame_chain.append(frame)
-                
         
         self.images[actor_type][act].append(frame_chain)
         
@@ -61,3 +59,4 @@ class actor_images(object):
     
     def remove_images(actor_type):
         self.images.pop(actor_type)
+

@@ -33,9 +33,6 @@ def vector_to_pos(current, destination, velocity):
     z2 = (diffx * diffx) + (diffy * diffy)
     z = sqrt(z2)
     
-    cosangle
-    vx, vy
-    
     if z != 0:
         #law of cosines for x velocity
         if diffx != 0:
@@ -150,6 +147,7 @@ def get_coordinates_offset_from_direction(initial_coordinates, direction):
     if direction == -1:
         #stay still
         dx, dy = 0, 0
+    
     elif y & 1 == 0:
         #y is even
         if direction == 1:
