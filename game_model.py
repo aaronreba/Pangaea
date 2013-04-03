@@ -214,55 +214,11 @@ class model(object):
     def move_actor(self, direction):
         #direction is an integer of o'clock
         #since this is hexagonal, direction must be odd
-        moved = False
-        
         x, y = self.current_actor.position
         
-        if y & 1 == 0:
-            y_even = True
-        else:
-            y_even = False
+        dx, dy = common.get_coordinates_offset_from_direction((x, y), direction)
         
-        #pause
-        if direction == -1:
-            dx = 0
-            dy = 0
-        
-        #diagonal up
-        elif direction == 1:
-            if y_even:
-                dx = 0
-            else:
-                dx = 1
-            dy = -1
-        elif direction == 11:
-            if y_even:
-                dx = -1
-            else:
-                dx = 0
-            dy = -1
-        
-        #diagonal down
-        elif direction == 5:
-            if y_even:
-                dx = 0
-            else:
-                dx = 1
-            dy = 1
-        elif direction == 7:
-            if y_even:
-                dx = -1
-            else:
-                dx = 0
-            dy = 1
-        
-        #horizontal
-        elif direction == 3:
-            dx = 1
-            dy = 0
-        elif direction == 9:
-            dx = -1
-            dy = 0
+        moved = False
         
         if dx == dy == 0:
             #pausing
@@ -321,7 +277,9 @@ class model(object):
         return moved
     
     def use_ability(self, direction, ability):
-        target_coordinates = common.get_coordinates_from_direction(self.human_actor.position, direction)
+        offset_coordinates = common.get_coordinates_offset_from_direction(self.human_actor.position, direction)
+        target_coordinates = (self.human_actor.position[0] + offset_coordinates[0],
+                              self.human_actor.position[1] + offset_coordinates[1])
         target_tile = self.landscape.landscape[target_coordinates]
         if target_tile.occupied:
             damage_modifier = ability.modifiers['damage_modifier']

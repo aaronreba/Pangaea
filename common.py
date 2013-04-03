@@ -144,9 +144,13 @@ def get_direction(p0, p1):
         else:
             return 11
 
-def get_coordinates_from_direction(initial_coordinates, direction):
+def get_coordinates_offset_from_direction(initial_coordinates, direction):
     x, y = initial_coordinates
-    if y & 1 == 0:
+    
+    if direction == -1:
+        #stay still
+        dx, dy = 0, 0
+    elif y & 1 == 0:
         #y is even
         if direction == 1:
             dx, dy = 0, -1
@@ -174,7 +178,7 @@ def get_coordinates_from_direction(initial_coordinates, direction):
         elif direction == 11:
             dx, dy = 0, -1
     
-    return (x + dx, y + dy)
+    return (dx, dy)
 
 def invert_oclock(invert_me):
     if invert_me < 6:
