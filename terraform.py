@@ -41,6 +41,9 @@ biome_graph[(2, 4),   (-4, -1)] = 'desert'
 biome_graph[(2, 4),   (0, 2)]   = 'grass'
 biome_graph[(2, 4),   (3, 4)]   = 'jungle'
 
+#to do: make this a subclass of a pygame sprite to make use of its rect
+#and image field when drawing the map. it would make animations easier, and,
+#more importantly, possible
 class tile(object):
     def __init__(self, information=None):
         if information != None:

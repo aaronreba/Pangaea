@@ -74,6 +74,7 @@ class model(object):
         self.view.landscape = self.landscape
         self.view.draw_map()
         self.view.center_map(self.human_actor)
+        self.view.place_actors()
         
         self.initialized = True
     
@@ -306,6 +307,11 @@ class model(object):
             #center map if human moved
             if self.current_actor == self.human_actor:
                 self.view.center_map(self.human_actor)
+                self.view.place_actors()
+            
+            #redraw this actor
+            else:
+                self.view.place_actors(self.current_actor)
             
             #redraw map
             self.view.draw_map()
@@ -417,6 +423,7 @@ class model(object):
         for i, each_actor in enumerate(self.actors):
             if not self.landscape.has_actor(each_actor):
                 remove_indeces.append(i)
+                self.view.remove_actor(each_actor)
         #add to list to avoid changing self.actors while looping through it
         while len(remove_indeces) > 0:
             self.remove_actor(self.actors[remove_indeces[0]])

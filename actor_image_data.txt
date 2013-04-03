@@ -15,6 +15,12 @@
 : 1_1.png
 : 1_2.png
 # attack
+: 0_0.png
+: 0_1.png
+: 0_2.png
+: 1_0.png
+: 1_1.png
+: 1_2.png
 # cast
 # shoot
 # hurt

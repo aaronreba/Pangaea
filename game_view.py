@@ -50,6 +50,9 @@ class view(object):
         
         self.actor_sprite_group.add(new_actor)
     
+    def remove_actor(self, remove_me):
+        self.actor_sprite_group.remove(remove_me)
+    
     def move_actor_image(self, actor, newx, newy):
         #the specified actor's image has moved
         #make it walk
@@ -115,8 +118,11 @@ class view(object):
             stagger_offset = self.tile_odd_offset
         
         #move actor's image rect to center
+        old_rect = self.centered_actor.rect
         self.centered_actor.rect = ((half_screen_x - half_tile_x,
-                                     half_screen_y - half_tile_y))
+                                     half_screen_y - half_tile_y,
+                                     old_rect[2],
+                                     old_rect[3]))
         
         #calculate terrain offset given actor's position
         centered_actor_offset = (half_screen_x - half_tile_x - tile_offset_x - stagger_offset,
@@ -127,6 +133,42 @@ class view(object):
         
         self.centered_actor_offset = centered_actor_offset
     
+    def place_actors(self, place_me=None):
+        centered_actor = self.centered_actor
+        
+        if place_me == None:
+            draw_me = self.model.actors
+        else:
+            draw_me = [place_me]
+        
+        for each_actor in draw_me:
+            actor_position = each_actor.position
+            
+            x_diff = actor_position[0] - self.centered_actor.position[0]
+            x_offset = x_diff * self.tile_draw_dimensions[0]
+            
+            #odd x offset
+            this_actor_odd_y = actor_position[1] & 1
+            centered_actor_odd_y = centered_actor.position[1] & 1
+            if this_actor_odd_y != centered_actor_odd_y:
+                if centered_actor_odd_y:
+                    x_offset -= (self.tile_draw_dimensions[0] / 2.0)
+                else:
+                    x_offset += (self.tile_draw_dimensions[0] / 2.0)
+            
+            x_offset += self.centered_actor.rect[0]
+            
+            y_diff = actor_position[1] - self.centered_actor.position[1]
+            y_offset = y_diff * self.tile_draw_dimensions[1]
+            
+            y_offset += self.centered_actor.rect[1]
+            
+            old_rect = each_actor.rect
+            each_actor.rect = (x_offset,
+                               y_offset,
+                               old_rect[2],
+                               old_rect[3])
+
     def draw(self):
         self.screen.blit(self.background, (0, 0))
         self.screen.blit(self.terrain, self.centered_actor_offset)
