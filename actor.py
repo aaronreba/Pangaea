@@ -125,7 +125,7 @@ class actor(pygame.sprite.Sprite):
         # self.visible = False
         
         #this is for the view displaying something walking
-        self.walking_speed = 160 #value in pixels
+        self.walking_speed = 10 #value in pixels
         self.walking_destination = (0, 0)
         self.walking_vector = (0, 0)
         

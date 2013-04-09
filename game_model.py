@@ -72,7 +72,6 @@ class model(object):
         self.generate_items()
         
         self.view.landscape = self.landscape
-        self.view.draw_map()
         self.view.center_map(self.human_actor)
         self.view.place_actors()
         
@@ -270,9 +269,6 @@ class model(object):
                 self.view.move_actor_image(self.current_actor,
                                            self.current_actor.position)
                 #self.view.place_actors(self.current_actor)
-            
-            #redraw map
-            self.view.draw_map()
             
             self.next_turn()
         

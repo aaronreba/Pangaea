@@ -72,6 +72,8 @@ class view(object):
         actor.change_act('walk')
     
     def draw_map(self):
+        if self.model.landscape == None:
+            return
         landscape_min_x = self.model.landscape.landscape_size[0][0]
         landscape_min_y = self.model.landscape.landscape_size[1][0]
         
@@ -90,8 +92,8 @@ class view(object):
             tile_offset_x = (map_coord[0] - landscape_min_x) * tile_draw_dimensions[0]
             tile_offset_y = (map_coord[1] - landscape_min_y) * tile_draw_dimensions[1]
             
-            blit_coords = (tile_offset_x + stagger_offset,
-                           tile_offset_y)
+            blit_coords = (tile_offset_x + stagger_offset + self.centered_actor_offset[0],
+                           tile_offset_y + self.centered_actor_offset[1])
             
             self.terrain.blit(self.terrain_images.images[terrain_type],
                               blit_coords)
@@ -133,7 +135,7 @@ class view(object):
         
         if actor_position[1] & 2 == 1:
             centered_actor_offset = (centered_actor_offset[0], centered_actor_offset[1] - half_tile_draw_x)
-        
+        #import code; code.interact(local=locals())
         self.centered_actor_offset = centered_actor_offset
     
     def screen_coordinates_from_map_position(self, map_position):
@@ -174,16 +176,17 @@ class view(object):
             old_rect = each_actor.rect
             each_actor.rect.left = screen_coordinates[0]
             each_actor.rect.top = screen_coordinates[1]
-
+    
     def draw(self):
         self.screen.blit(self.background, (0, 0))
-        self.screen.blit(self.terrain, self.centered_actor_offset)
+        self.draw_map()
+        self.screen.blit(self.terrain, (0, 0))
         
         self.actor_sprite_group.draw(self.screen)
         self.effect_sprite_group.draw(self.screen)
         self.gui_group.draw(self.screen)
         self.text_group.draw(self.screen)
-  
+    
     def update(self, dt):
         #update animations
         for each_actor in self.model.actors:
