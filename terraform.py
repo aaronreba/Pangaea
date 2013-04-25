@@ -1,22 +1,21 @@
 import random
 import common
 
-##########
-# to do: #
-##########
+#(0, 0)        (1, 0)        (2, 0)
+#       (0, 1)        (1, 1)        (2, 1)
+#(0, 2)        (1, 2)        (2, 2)
 
-#add random structures (towns, shrines, fountains, temples, etc)
 
 #########
 
 #all chunks within this many distance units from the human must be
 #generated whenever a generation is requested
 #testing: 30 chunks
-do_chunk_generate_distance = 2
+do_chunk_generate_distance = 1
 
 #when a deletion is requested, chunks within this many distance units
 #from the human must be deleted
-do_chunk_delete_distance = 2
+do_chunk_delete_distance = 1
 
 #a generation is requested when the human is within this many
 #chunks from the edge of the world.
@@ -24,7 +23,7 @@ do_chunk_delete_distance = 2
 #another check for land is made. if that request can be carried out,
 #it will.
 #testing: 12 chunks
-check_chunk_generate_distance = 2
+check_chunk_generate_distance = 1
 
 chunk_size = 5
 
@@ -453,12 +452,17 @@ def delete_map_at_position(
         for y_position in xrange(chunk_position[1] - do_chunk_delete_distance, chunk_position[1] + do_chunk_generate_distance + 1):
             safe_chunk_positions.append((x_position, y_position))
     
+    retract_changed = False
+    
     for map_position in this_landscape.landscape.keys():
         if (int(map_position[0] / chunk_size), int(map_position[1] / chunk_size)) not in safe_chunk_positions:
             del this_landscape.landscape[map_position]
+            retract_changed = True
     for chunk_position in this_landscape.landscape_chunk_mask.keys():
         if chunk_position not in safe_chunk_positions:
             del this_landscape.landscape_chunk_mask[chunk_position]
+    
+    return retract_changed
 
 def generate_chunk(
     this_landscape,

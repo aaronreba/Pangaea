@@ -72,7 +72,7 @@ class model(object):
         self.generate_items()
         
         self.view.landscape = self.landscape
-        self.view.center_map(self.human_actor)
+        #self.view.center_map(self.human_actor)
         self.view.place_actors()
         
         self.initialized = True
@@ -236,11 +236,15 @@ class model(object):
             self.landscape.landscape[x + dx, y + dy].actors.append(self.current_actor)
             
             old_position = (x, y)
+            self.current_actor.old_position = old_position
             self.current_actor.position = (x + dx, y + dy)
             
             ###################################################
             # check if human actor has moved into a new chunk #
             ###################################################
+            
+            map_changed = False
+            old_map_bounds = self.landscape.landscape_size
             
             if self.current_actor == self.human_actor:
                 chunk_size = terraform.chunk_size
@@ -248,7 +252,17 @@ class model(object):
                 #or check to delete out of range terrain
                 if (x / chunk_size) != (x + dx / chunk_size) or\
                    (y / chunk_size) != (y + dy / chunk_size):
-                    self.do_full_extension_retraction()
+                    map_changed = self.do_full_extension_retraction()
+            
+            if map_changed:
+                pass
+                #shift all actors
+                new_map_bounds = self.landscape.landscape_size
+                screen_change_direction = self.view.screen_offset_from_map_direction(old_map_bounds, new_map_bounds)
+                #for each actor, offset its screen location by the map_change_direction
+                for each_actor in self.actors:
+                    self.view.displace_actor(each_actor, screen_change_direction)
+                
             
             ###############
             # update view #
@@ -259,16 +273,19 @@ class model(object):
             #update image
             # self.view.move_actor_image(self.current_actor, x + dx, y + dy)
             
-            #center map if human moved
-            if self.current_actor == self.human_actor:
-                self.view.center_map(self.human_actor)
-                self.view.place_actors()
-            
-            #animate this actor
-            else:
-                self.view.move_actor_image(self.current_actor,
-                                           self.current_actor.position)
-                #self.view.place_actors(self.current_actor)
+            ##center map if human moved
+            #if self.current_actor == self.human_actor:
+            #    #self.view.center_map(self.human_actor)
+            #    self.view.place_actors()
+            #    pass
+            #
+            ##animate this actor
+            #else:
+            #    #self.view.move_actor_image(self.current_actor,
+            #    #                           self.current_actor.position)
+            #    self.view.place_actors(self.current_actor)
+            #    pass
+            self.view.move_actor_image(self.current_actor)
             
             self.next_turn()
         
@@ -371,8 +388,10 @@ class model(object):
     
     def do_full_extension_retraction(self):
         #retract before extending!
-        self.retract_map_from_actor(self.human_actor)
-        self.extend_map_from_actor(self.human_actor)
+        retract_changed = self.retract_map_from_actor(self.human_actor)
+        extend_changed = self.extend_map_from_actor(self.human_actor)
+        
+        changed = retract_changed or extend_changed
         
         #remove any actors that are now outside of viewing distance
         remove_indeces = []
@@ -380,16 +399,21 @@ class model(object):
             if not self.landscape.has_actor(each_actor):
                 remove_indeces.append(i)
                 self.view.remove_actor(each_actor)
+        
         #add to list to avoid changing self.actors while looping through it
         while len(remove_indeces) > 0:
             self.remove_actor(self.actors[remove_indeces[0]])
             remove_indeces.pop(0)
+        
+        return changed
     
     def extend_map_from_actor(self, extend_from_me):
         immediate_ungenerated_chunks = terraform.find_immediate_ungenerated(
             self.landscape,
             extend_from_me.position,
             terraform.check_chunk_generate_distance)
+        
+        extended = False
         
         if len(immediate_ungenerated_chunks) != 0:
             distant_ungenerated_chunks = terraform.find_immediate_ungenerated(
@@ -400,9 +424,13 @@ class model(object):
             self.landscape.landscape_size = terraform.extend_map_using_ungenerated(
                 self.landscape,
                 distant_ungenerated_chunks)
+            
+            extended = True
+        
+        return extended
     
     def retract_map_from_actor(self, retract_from_me):
-        terraform.delete_map_at_position(
+        return terraform.delete_map_at_position(
             self.landscape,
             retract_from_me.position)
     
