@@ -250,19 +250,17 @@ class model(object):
                 chunk_size = terraform.chunk_size
                 #check to generate new terrain
                 #or check to delete out of range terrain
-                if (x / chunk_size) != (x + dx / chunk_size) or\
-                   (y / chunk_size) != (y + dy / chunk_size):
+                if int(x / chunk_size) != int((x + dx) / chunk_size) or\
+                   int(y / chunk_size) != int((y + dy) / chunk_size):
                     map_changed = self.do_full_extension_retraction()
             
             if map_changed:
-                pass
                 #shift all actors
                 new_map_bounds = self.landscape.landscape_size
                 screen_change_direction = self.view.screen_offset_from_map_direction(old_map_bounds, new_map_bounds)
                 #for each actor, offset its screen location by the map_change_direction
                 for each_actor in self.actors:
                     self.view.displace_actor(each_actor, screen_change_direction)
-                
             
             ###############
             # update view #

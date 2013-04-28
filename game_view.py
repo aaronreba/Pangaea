@@ -189,17 +189,7 @@ class view(object):
     def screen_offset_from_map_direction(self, old_map_bounds, new_map_bounds):
         map_change_direction = (old_map_bounds[0][0] - new_map_bounds[0][0],
                                 old_map_bounds[1][0] - new_map_bounds[1][0])
-        if map_change_direction[1] & 1 == 1:
-            x_offset = self.tile_draw_dimensions[0] / 2.0
-            if new_map_bounds[1][0] & 1 == 1:
-                #even to odd: add half of x width
-                pass
-            else:
-                #odd to even: subtract half
-                x_offset = -x_offset
-        else:
-            x_offset = 0
-        screen_change_direction = (map_change_direction[0] * self.tile_draw_dimensions[0] + x_offset,
+        screen_change_direction = (map_change_direction[0] * self.tile_draw_dimensions[0],
                                    map_change_direction[1] * self.tile_draw_dimensions[1])
         return screen_change_direction
     
