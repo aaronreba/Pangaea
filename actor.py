@@ -361,47 +361,47 @@ position: {8}'.format(
         self.image = self.image_chains[self.current_act][self.current_act_animation_index][self.current_act_frame_index]
       
         if self.current_act == 'walk':
-            self.update_walk(dt)
+            return self.update_walk(dt)
     
     def update_walk(self, dt):
         dt *= .001
-      
+        
         vx = self.walking_vector[0]
         vy = self.walking_vector[1]
-      
+        
         destx = self.walking_destination[0]
         desty = self.walking_destination[1]
-      
+        
         bx = self.walking_direction_boolean[0]
         by = self.walking_direction_boolean[1]
-      
+        
         movex = vx * dt
         movey = vy * dt
-      
+        
         self.decimal_rect[0] += movex
         self.decimal_rect[1] += movey
-      
+        
         if bx:
             int_decimal_rect_x = int(self.decimal_rect[0])
         else:
             int_decimal_rect_x = ceil(self.decimal_rect[0])
-      
+        
         if by:
             int_decimal_rect_y = int(self.decimal_rect[1])
         else:
             int_decimal_rect_y = ceil(self.decimal_rect[1])
-      
+        
         self.decimal_rect[0] -= int_decimal_rect_x
         self.decimal_rect[1] -= int_decimal_rect_y
-      
+        
         self.rect.move_ip(int_decimal_rect_x,
                           int_decimal_rect_y)
-      
+        
         rectx = self.rect[0]
         recty = self.rect[1]
-      
+        
         recalculate = False
-      
+        
         if bx:
             if rectx > destx:
                 self.rect.left = destx
@@ -410,7 +410,7 @@ position: {8}'.format(
             if rectx < destx:
                 self.rect.left = destx
                 recalculate = True
-      
+        
         if by:
             if recty > desty:
                 self.rect.top = desty
@@ -419,9 +419,11 @@ position: {8}'.format(
             if recty < desty:
                 self.rect.top = desty
                 recalculate = True
-      
+        
         if self.rect.left == destx and self.rect.top == desty:
             self.change_act('stand')
         elif recalculate:
             self.set_walk()
-    
+        
+        return (int_decimal_rect_x, int_decimal_rect_y)
+

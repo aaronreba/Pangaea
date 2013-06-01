@@ -6,6 +6,7 @@ import actor_images
 import terrain_images
 import common
 import constants
+import terraform
 
 #display is imported from pygame/*
 
@@ -26,6 +27,8 @@ class view(object):
         self.display = display
         
         self.centered_actor = None
+        self.chunk_offset = (0, 0)
+        self.tile_offset = (0, 0)
         self.centered_actor_offset = (0, 0) #tuple of actor landscape coordinates
         
         #image caches
@@ -90,8 +93,10 @@ class view(object):
             tile_offset_x = (map_coord[0] - landscape_min_x) * tile_draw_dimensions[0]
             tile_offset_y = (map_coord[1] - landscape_min_y) * tile_draw_dimensions[1]
             
-            blit_coords = (tile_offset_x + stagger_offset + self.centered_actor_offset[0],
-                           tile_offset_y + self.centered_actor_offset[1])
+            #blit_coords = (tile_offset_x + stagger_offset + self.centered_actor_offset[0],
+            #               tile_offset_y + self.centered_actor_offset[1])
+            blit_coords = (tile_offset_x + stagger_offset + self.chunk_offset[0] + self.tile_offset[0],
+                           tile_offset_y + self.chunk_offset[1] + self.tile_offset[1])
             
             self.terrain.blit(self.terrain_images.images[terrain_type],
                               blit_coords)
@@ -117,9 +122,8 @@ class view(object):
         tile_offset_y = actor_distance_to_edge[1] * tile_draw_dimensions[1]
         
         #odd y stagger offset
-        if upon_actor.position[1] & 1 == 0:
-            stagger_offset = 0
-        else:
+        stagger_offset = 0
+        if upon_actor.position[1] & 1 != 0:
             stagger_offset = self.tile_odd_offset
         
         #move actor's image rect to center
@@ -131,10 +135,27 @@ class view(object):
         centered_actor_offset = (half_screen_x - half_tile_x - tile_offset_x - stagger_offset,
                                  half_screen_y - half_tile_y - tile_offset_y)
         
-        if actor_position[1] & 2 == 1:
-            centered_actor_offset = (centered_actor_offset[0], centered_actor_offset[1] - half_tile_draw_x)
+        #if actor_position[1] & 2 == 1:
+        #    centered_actor_offset = (centered_actor_offset[0], centered_actor_offset[1] - half_tile_draw_x)
+        
         #import code; code.interact(local=locals())
+        
         self.centered_actor_offset = centered_actor_offset
+        
+        #smaller tile offset
+        chunk_size = terraform.chunk_size
+        into_tile = (abs(actor_position[0] - (actor_position[0] / chunk_size) * chunk_size),
+                     abs(actor_position[1] - (actor_position[1] / chunk_size) * chunk_size))
+        
+        subtract_tile_offset = (centered_actor_offset[0] - (into_tile[0] * tile_draw_dimensions[0]) - stagger_offset,
+                                centered_actor_offset[1] - (into_tile[1] * tile_draw_dimensions[1]))
+        
+        self.tile_offset = (centered_actor_offset[0] - subtract_tile_offset[0],
+                            centered_actor_offset[1] - subtract_tile_offset[1])
+        
+        #chunk offset
+        self.chunk_offset = (centered_actor_offset[0] - self.tile_offset[0],
+                             centered_actor_offset[1] - self.tile_offset[1])
     
     def screen_coordinates_from_map_position(self, map_position):
         landscape_min_x = self.model.landscape.landscape_size[0][0]
@@ -152,10 +173,37 @@ class view(object):
         tile_offset_x = (map_position[0] - landscape_min_x) * tile_draw_dimensions[0]
         tile_offset_y = (map_position[1] - landscape_min_y) * tile_draw_dimensions[1]
         
-        blit_coords = (tile_offset_x + stagger_offset + self.centered_actor_offset[0],
-                       tile_offset_y + self.centered_actor_offset[1])
+        screen_coords = (tile_offset_x + self.tile_offset[0] + stagger_offset + self.centered_actor_offset[0],
+                       tile_offset_y + self.tile_offset[1] + self.centered_actor_offset[1])
         
-        return blit_coords
+        #new method involving tile offset:
+        
+        #self.chunk_offset + tile offset calced from map_position
+        
+        #centered_position = self.centered_actor.position
+        #chunk_size = terraform.chunk_size
+        #tile_draw_dimensions = self.tile_draw_dimensions
+        #
+        #stagger_offset = 0
+        #if map_position[1] & 1 != 0:
+        #    stagger_offset = self.tile_odd_offset
+        #
+        #centered_chunk_top_left = ((centered_position[0] / chunk_size) * chunk_size,
+        #                           (centered_position[1] / chunk_size) * chunk_size)
+        #
+        #into_tile = (map_position[0] - centered_chunk_top_left[0],
+        #             map_position[1] - centered_chunk_top_left[1])
+        #
+        #subtract_tile_offset = (centered_position[0] - (into_tile[0] * tile_draw_dimensions[0]) - stagger_offset,
+        #                        centered_position[1] - (into_tile[1] * tile_draw_dimensions[1]))
+        #
+        #this_tile_offset = (centered_position[0] - subtract_tile_offset[0],
+        #                    centered_position[1] - subtract_tile_offset[1])
+        #
+        #screen_coords = (self.chunk_offset[0] + this_tile_offset[0],
+        #                 self.chunk_offset[1] + this_tile_offset[1])
+        
+        return screen_coords
     
     def place_actors(self, place_me=None, at_old=False):
         #centered_actor = self.centered_actor
@@ -214,8 +262,27 @@ class view(object):
     
     def update(self, dt):
         #update animations
+        walked = None
         for each_actor in self.model.actors:
-            each_actor.update_chain(dt)
+            if each_actor == self.centered_actor:
+                walked = each_actor.update_chain(dt)
+            else:
+                each_actor.update_chain(dt)
+        
+        if walked != None:
+            #offset by walked
+            #move map
+            self.tile_offset = (self.tile_offset[0] - walked[0],
+                                self.tile_offset[1] - walked[1])
+            
+            #move all other actors' current destination/position
+            for each_actor in self.model.actors:
+                each_actor.walking_destination = (each_actor.walking_destination[0] - walked[0],
+                                                  each_actor.walking_destination[1] - walked[1])
+            
+            #move center actor itself
+            self.centered_actor.rect.left -= walked[0]
+            self.centered_actor.rect.top -= walked[1]
         
         #draw sprites as they are now
         self.draw()

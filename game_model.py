@@ -72,7 +72,8 @@ class model(object):
         self.generate_items()
         
         self.view.landscape = self.landscape
-        #self.view.center_map(self.human_actor)
+        self.centered_actor = self.human_actor
+        self.view.center_map(self.centered_actor)
         self.view.place_actors()
         
         self.initialized = True
@@ -258,6 +259,7 @@ class model(object):
                 #shift all actors
                 new_map_bounds = self.landscape.landscape_size
                 screen_change_direction = self.view.screen_offset_from_map_direction(old_map_bounds, new_map_bounds)
+                
                 #for each actor, offset its screen location by the map_change_direction
                 for each_actor in self.actors:
                     self.view.displace_actor(each_actor, screen_change_direction)
@@ -271,9 +273,7 @@ class model(object):
             #update image
             # self.view.move_actor_image(self.current_actor, x + dx, y + dy)
             
-            ##center map if human moved
-            #if self.current_actor == self.human_actor:
-            #    #self.view.center_map(self.human_actor)
+            
             #    self.view.place_actors()
             #    pass
             #
@@ -283,6 +283,7 @@ class model(object):
             #    #                           self.current_actor.position)
             #    self.view.place_actors(self.current_actor)
             #    pass
+            
             self.view.move_actor_image(self.current_actor)
             
             self.next_turn()
