@@ -255,6 +255,10 @@ class model(object):
                    int(y / chunk_size) != int((y + dy) / chunk_size):
                     map_changed = self.do_full_extension_retraction()
             
+            ###############
+            # update view #
+            ###############
+            
             if map_changed:
                 #shift all actors
                 new_map_bounds = self.landscape.landscape_size
@@ -263,26 +267,6 @@ class model(object):
                 #for each actor, offset its screen location by the map_change_direction
                 for each_actor in self.actors:
                     self.view.displace_actor(each_actor, screen_change_direction)
-            
-            ###############
-            # update view #
-            ###############
-            
-            #updating view after all model things have been updated
-            
-            #update image
-            # self.view.move_actor_image(self.current_actor, x + dx, y + dy)
-            
-            
-            #    self.view.place_actors()
-            #    pass
-            #
-            ##animate this actor
-            #else:
-            #    #self.view.move_actor_image(self.current_actor,
-            #    #                           self.current_actor.position)
-            #    self.view.place_actors(self.current_actor)
-            #    pass
             
             self.view.move_actor_image(self.current_actor)
             

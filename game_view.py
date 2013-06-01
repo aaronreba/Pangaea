@@ -29,6 +29,7 @@ class view(object):
         self.centered_actor = None
         self.chunk_offset = (0, 0)
         self.tile_offset = (0, 0)
+        self.tile_offset_end = (0, 0)
         self.centered_actor_offset = (0, 0) #tuple of actor landscape coordinates
         
         #image caches
@@ -63,12 +64,12 @@ class view(object):
         
         new_position = actor.position
         
-        screen_coordinates = self.screen_coordinates_from_map_position(new_position)
+        new_screen_coordinates = self.screen_coordinates_from_map_position(new_position)
         
         #place actor at its previous position
         self.place_actors(place_me=actor, at_old=True)
         
-        actor.set_walk(screen_coordinates)
+        actor.set_walk(new_screen_coordinates)
         
         actor.change_act('walk')
     
@@ -174,34 +175,7 @@ class view(object):
         tile_offset_y = (map_position[1] - landscape_min_y) * tile_draw_dimensions[1]
         
         screen_coords = (tile_offset_x + self.tile_offset[0] + stagger_offset + self.centered_actor_offset[0],
-                       tile_offset_y + self.tile_offset[1] + self.centered_actor_offset[1])
-        
-        #new method involving tile offset:
-        
-        #self.chunk_offset + tile offset calced from map_position
-        
-        #centered_position = self.centered_actor.position
-        #chunk_size = terraform.chunk_size
-        #tile_draw_dimensions = self.tile_draw_dimensions
-        #
-        #stagger_offset = 0
-        #if map_position[1] & 1 != 0:
-        #    stagger_offset = self.tile_odd_offset
-        #
-        #centered_chunk_top_left = ((centered_position[0] / chunk_size) * chunk_size,
-        #                           (centered_position[1] / chunk_size) * chunk_size)
-        #
-        #into_tile = (map_position[0] - centered_chunk_top_left[0],
-        #             map_position[1] - centered_chunk_top_left[1])
-        #
-        #subtract_tile_offset = (centered_position[0] - (into_tile[0] * tile_draw_dimensions[0]) - stagger_offset,
-        #                        centered_position[1] - (into_tile[1] * tile_draw_dimensions[1]))
-        #
-        #this_tile_offset = (centered_position[0] - subtract_tile_offset[0],
-        #                    centered_position[1] - subtract_tile_offset[1])
-        #
-        #screen_coords = (self.chunk_offset[0] + this_tile_offset[0],
-        #                 self.chunk_offset[1] + this_tile_offset[1])
+                         tile_offset_y + self.tile_offset[1] + self.centered_actor_offset[1])
         
         return screen_coords
     
