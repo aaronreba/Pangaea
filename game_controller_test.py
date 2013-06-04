@@ -46,6 +46,7 @@ class controller(object):
                 elif event.key == K_m:
                     print self.model.landscape
                     print self.model.human_actor.position
+                    print self.model.view.tile_offset
                 elif event.key == K_j:
                     print self.model.landscape.__str__(self.model.human_actor)
                     print self.model.human_actor.position

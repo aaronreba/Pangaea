@@ -11,11 +11,11 @@ import common
 #all chunks within this many distance units from the human must be
 #generated whenever a generation is requested
 #testing: 30 chunks
-do_chunk_generate_distance = 1
+do_chunk_generate_distance = 3
 
 #when a deletion is requested, chunks within this many distance units
 #from the human must be deleted
-do_chunk_delete_distance = 1
+do_chunk_delete_distance = 3
 
 #a generation is requested when the human is within this many
 #chunks from the edge of the world.
@@ -23,7 +23,7 @@ do_chunk_delete_distance = 1
 #another check for land is made. if that request can be carried out,
 #it will.
 #testing: 12 chunks
-check_chunk_generate_distance = 1
+check_chunk_generate_distance = 3
 
 chunk_size = 5
 

@@ -64,10 +64,19 @@ class view(object):
         
         new_position = actor.position
         
-        new_screen_coordinates = self.screen_coordinates_from_map_position(new_position)
+        #place actor at its previous position if it was walking
+        if actor.current_act == 'walk':
+            if actor == self.centered_actor:
+                distance_to_destination =\
+                    (actor.walking_destination[0] - actor.rect.left,
+                     actor.walking_destination[1] - actor.rect.top )
+                #print distance_to_destination
+                #shift universe by distance
+                self.shift_universe(distance_to_destination)
+            
+            self.place_actors(place_me=actor, at_walking_destination=True)
         
-        #place actor at its previous position
-        self.place_actors(place_me=actor, at_old=True)
+        new_screen_coordinates = self.screen_coordinates_from_map_position(new_position)
         
         actor.set_walk(new_screen_coordinates)
         
@@ -179,7 +188,7 @@ class view(object):
         
         return screen_coords
     
-    def place_actors(self, place_me=None, at_old=False):
+    def place_actors(self, place_me=None, at_walking_destination=False):
         #centered_actor = self.centered_actor
         #
         #if place_me == None:
@@ -200,8 +209,9 @@ class view(object):
             draw_me = [place_me]
         
         for each_actor in draw_me:
-            if at_old:
-                screen_coordinates = self.screen_coordinates_from_map_position(each_actor.old_position)
+            if at_walking_destination:
+                #screen_coordinates = self.screen_coordinates_from_map_position(each_actor.old_position)
+                screen_coordinates = each_actor.walking_destination
             else:
                 screen_coordinates = self.screen_coordinates_from_map_position(each_actor.position)
             
@@ -224,6 +234,21 @@ class view(object):
         displace_me.walking_destination = (old_walking_destination[0] + screen_change_direction[0],
                                            old_walking_destination[1] + screen_change_direction[1])
     
+    def shift_universe(self, shift_distance):
+        #print 'old', self.tile_offset, shift_distance,
+        #if the centered actor has or will have moved, shift the universe
+        self.tile_offset = (self.tile_offset[0] - shift_distance[0],
+                            self.tile_offset[1] - shift_distance[1])
+        #print 'new', self.tile_offset
+        #move all other actors' current destination/position
+        for each_actor in self.model.actors:
+            each_actor.walking_destination = (each_actor.walking_destination[0] - shift_distance[0],
+                                              each_actor.walking_destination[1] - shift_distance[1])
+        
+        #move center actor itself
+        self.centered_actor.rect.left -= shift_distance[0]
+        self.centered_actor.rect.top  -= shift_distance[1]
+    
     def draw(self):
         self.screen.blit(self.background, (0, 0))
         self.draw_map()
@@ -236,27 +261,15 @@ class view(object):
     
     def update(self, dt):
         #update animations
-        walked = None
+        center_walked = None
         for each_actor in self.model.actors:
             if each_actor == self.centered_actor:
-                walked = each_actor.update_chain(dt)
+                center_walked = each_actor.update_chain(dt)
             else:
                 each_actor.update_chain(dt)
         
-        if walked != None:
-            #offset by walked
-            #move map
-            self.tile_offset = (self.tile_offset[0] - walked[0],
-                                self.tile_offset[1] - walked[1])
-            
-            #move all other actors' current destination/position
-            for each_actor in self.model.actors:
-                each_actor.walking_destination = (each_actor.walking_destination[0] - walked[0],
-                                                  each_actor.walking_destination[1] - walked[1])
-            
-            #move center actor itself
-            self.centered_actor.rect.left -= walked[0]
-            self.centered_actor.rect.top -= walked[1]
+        if center_walked != None:
+            self.shift_universe(center_walked)
         
         #draw sprites as they are now
         self.draw()
