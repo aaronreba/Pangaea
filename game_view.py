@@ -239,12 +239,9 @@ class view(object):
                             self.tile_offset[1] - shift_distance[1])
     
     def shift_universe(self, shift_distance):
-        #print 'old', self.tile_offset, shift_distance,
         #if the centered actor has or will have moved, shift the universe
-        #self.tile_offset = (self.tile_offset[0] - shift_distance[0],
-        #                    self.tile_offset[1] - shift_distance[1])
         self.shift_tile_offset(shift_distance)
-        #print 'new', self.tile_offset
+        
         #move all other actors' current destination/position
         for each_actor in self.model.actors:
             each_actor.walking_destination = (each_actor.walking_destination[0] - shift_distance[0],

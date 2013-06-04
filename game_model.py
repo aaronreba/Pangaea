@@ -260,16 +260,10 @@ class model(object):
             ###############
             
             if map_changed:
-                #shift all actors
+                #shift tile offset (which as a result shifts everything else)
                 new_map_bounds = self.landscape.landscape_size
                 screen_change_direction = self.view.screen_offset_from_map_direction(old_map_bounds, new_map_bounds)
-                #self.view.tile_offset = (self.view.tile_offset[0] - screen_change_direction[0],
-                #                         self.view.tile_offset[1] - screen_change_direction[1])
                 self.view.shift_tile_offset(screen_change_direction)
-                #for each actor, offset its screen location by the map_change_direction
-                #for each_actor in self.actors:
-                #    self.view.displace_actor(each_actor, screen_change_direction)
-                #self.view.shift_universe(screen_change_direction)
             
             self.view.move_actor_image(self.current_actor)
             
