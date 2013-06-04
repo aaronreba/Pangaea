@@ -69,7 +69,7 @@ class view(object):
             if actor == self.centered_actor:
                 distance_to_destination =\
                     (actor.walking_destination[0] - actor.rect.left,
-                     actor.walking_destination[1] - actor.rect.top )
+                     actor.walking_destination[1] - actor.rect.top)
                 #print distance_to_destination
                 #shift universe by distance
                 self.shift_universe(distance_to_destination)
@@ -244,10 +244,12 @@ class view(object):
         for each_actor in self.model.actors:
             each_actor.walking_destination = (each_actor.walking_destination[0] - shift_distance[0],
                                               each_actor.walking_destination[1] - shift_distance[1])
+            each_actor.rect.left = each_actor.rect.left - shift_distance[0]
+            each_actor.rect.top = each_actor.rect.top - shift_distance[1]
         
-        #move center actor itself
-        self.centered_actor.rect.left -= shift_distance[0]
-        self.centered_actor.rect.top  -= shift_distance[1]
+        ##move center actor itself
+        #self.centered_actor.rect.left -= shift_distance[0]
+        #self.centered_actor.rect.top  -= shift_distance[1]
     
     def draw(self):
         self.screen.blit(self.background, (0, 0))
