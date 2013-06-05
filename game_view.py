@@ -76,6 +76,12 @@ class view(object):
             
             self.place_actors(place_me=actor, at_walking_destination=True)
         
+        old_position = actor.old_position
+        
+        if new_position == old_position:
+            #skipping ahead to pause
+            return
+        
         new_screen_coordinates = self.screen_coordinates_from_map_position(new_position)
         
         actor.set_walk(new_screen_coordinates)
