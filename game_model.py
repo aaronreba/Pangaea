@@ -265,7 +265,10 @@ class model(object):
                 screen_change_direction = self.view.screen_offset_from_map_direction(old_map_bounds, new_map_bounds)
                 self.view.shift_tile_offset(screen_change_direction)
             
-            self.view.move_actor_image(self.current_actor)
+            if dx == dy == 0:
+                pass
+            else:
+                self.view.move_actor_image(self.current_actor)
             
             self.next_turn()
         
