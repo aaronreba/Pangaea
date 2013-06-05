@@ -120,7 +120,7 @@ class actor(pygame.sprite.Sprite):
         self.rect = None #inherited from Sprite, position on screen
         self.image = None #inherited from Sprite
         
-        # self.decimal_rect = None
+        self.decimal_rect = (0, 0) #holds decimals that pygame's rect destroys
         
         # self.visible = False
         
@@ -301,7 +301,8 @@ position: {8}'.format(
     
     def set_walk(self, new_location=None):
         #set walk to SCREEN COORDINATES
-        current_actor_coordinates = (self.rect[0], self.rect[1])
+        current_actor_coordinates = (self.rect[0] + self.decimal_rect[0],
+                                     self.rect[1] + self.decimal_rect[1])
         if new_location == None:
             new_location = self.walking_destination
         
