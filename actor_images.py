@@ -2,9 +2,7 @@ import os
 import pygame
 
 #the images dict is like so:
-#images['actor_type'] = {'act': [frame_1, ...]...}
-#for example:
-#images['dog']['walk'] = [walk_1, walk_2, walk_3]
+#images['dog']['walk'][direction oclock] = [[walk_1_a, walk_2_a, walk_3_a], [walk_1_b, walk_2_b]]
 class actor_images(object):
     def __init__(self):
         self.images = {}
@@ -15,47 +13,44 @@ class actor_images(object):
         
         self.images[actor_type] = {}
         
-        actor_image_data = open('actor_image_data.txt', 'r')
+        actor_type_dir = os.path.join('images', 'actors', actor_type)
         
-        while actor_image_data.readline()[2:-1] != actor_type:
-            pass
-        
-        frame_chain = []
-        
-        while 1:
-            line = actor_image_data.readline()
-            if not line or line[0] == '>' or line == '\n':
-                break
+        for action_type in os.listdir(actor_type_dir):
+            action_type_dir = os.path.join(actor_type_dir, action_type)
             
-            short_line = line[2:-1]
-            if line[0] == '#':
-                #new act
-                if frame_chain:
-                    self.images[actor_type][act].append(frame_chain)
+            self.images[actor_type][action_type] = {}
+            
+            for direction in xrange(1, 13, 2):
+                self.images[actor_type][action_type][direction] = []
+            
+            current_frame = None
+            current_direction = None
+            
+            for action_iteration in sorted(os.listdir(action_type_dir)):
+                if action_iteration[-4:] != '.png':
+                    continue
                 
-                act = short_line
-                self.images[actor_type][act] = []
-                chain_number = 0
-                frame_chain = []
-            elif line[0] == ':':
-                #new frame
-                frame = pygame.image.load(os.path.join(
+                split_action_iteration = action_iteration.\
+                                         split('.')[0].\
+                                         split('_')
+                direction   = int(split_action_iteration[0])
+                chain_index = int(split_action_iteration[1])
+                frame_index = int(split_action_iteration[2])
+                
+                frame_image_name = os.path.join(
                     'images',
                     'actors',
                     actor_type,
-                    act,
-                    short_line
-                )).convert_alpha()
+                    action_type,
+                    action_iteration
+                )
+                frame = pygame.image.load(frame_image_name).convert_alpha()
                 
-                if short_line[0] != str(chain_number):
-                    self.images[actor_type][act].append(frame_chain)
-                    frame_chain = []
-                    chain_number += 1
-                frame_chain.append(frame)
-        
-        self.images[actor_type][act].append(frame_chain)
-        
-        actor_image_data.close()
+                
+                direction_chain = self.images[actor_type][action_type][direction]
+                if len(direction_chain) == chain_index:
+                    direction_chain.append([])
+                direction_chain[chain_index].append(frame)
     
     def remove_images(actor_type):
         self.images.pop(actor_type)

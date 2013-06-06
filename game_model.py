@@ -259,11 +259,16 @@ class model(object):
             # update view #
             ###############
             
+            if not (dx == dy == 0):
+                self.current_actor.change_direction(direction)
+            
             if map_changed:
                 #shift tile offset (which as a result shifts everything else)
                 new_map_bounds = self.landscape.landscape_size
                 screen_change_direction = self.view.screen_offset_from_map_direction(old_map_bounds, new_map_bounds)
                 self.view.shift_tile_offset(screen_change_direction)
+            
+            
             
             self.view.move_actor_image(self.current_actor)
             

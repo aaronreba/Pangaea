@@ -80,13 +80,11 @@ class view(object):
         
         if new_position == old_position:
             #skipping ahead to pause
-            return
-        
-        new_screen_coordinates = self.screen_coordinates_from_map_position(new_position)
-        
-        actor.set_walk(new_screen_coordinates)
-        
-        actor.change_act('walk')
+            pass
+        else:
+            new_screen_coordinates = self.screen_coordinates_from_map_position(new_position)
+            actor.set_walk(new_screen_coordinates)
+            actor.change_act('walk')
     
     def draw_map(self):
         if self.model.landscape == None:

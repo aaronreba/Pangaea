@@ -129,6 +129,9 @@ class actor(pygame.sprite.Sprite):
         self.walking_destination = (0, 0)
         self.walking_vector = (0, 0)
         
+        #starting direction
+        self.facing_direction = 5
+        
         #tuple of (True, False). True = positive direction, False = negative
         self.walking_direction_boolean = None
     
@@ -270,9 +273,9 @@ position: {8}'.format(
         self.current_act = 'stand'
         self.current_act_animation_index = 0
         self.current_act_frame_index = 0
-        self.current_act_frame = self.image_chains['stand'][0][0]
-        self.current_act_number_of_animations = len(self.image_chains['stand'])
-        self.current_act_animation_length = len(self.image_chains['stand'][0])
+        self.current_act_frame = self.image_chains['stand'][self.facing_direction][0]
+        self.current_act_number_of_animations = len(self.image_chains['stand'][self.facing_direction])
+        self.current_act_animation_length = len(self.image_chains['stand'][self.facing_direction][0])
         self.current_act_time = 0
         self.current_act_alotted_time = MS_PER_FRAME
     
@@ -289,15 +292,17 @@ position: {8}'.format(
         self.current_act = new_act
         self.current_act_animation_index = 0
         self.current_act_frame_index = 0
-        self.current_act_frame = self.image_chains[new_act][0][0]
-        self.current_act_number_of_animations = len(self.image_chains[new_act])
-        self.current_act_animation_length = len(self.image_chains[new_act][0])
+        self.current_act_frame = self.image_chains[new_act][self.facing_direction][0]
+        self.current_act_number_of_animations = len(self.image_chains[new_act][self.facing_direction])
+        self.current_act_animation_length = len(self.image_chains[new_act][self.facing_direction][0])
         self.current_act_time = 0
         self.current_act_alotted_time = MS_PER_FRAME
       
         if new_act == 'walk':
             self.decimal_rect = [0, 0]
       
+    def change_direction(self, new_direction):
+        self.facing_direction = new_direction
     
     def set_walk(self, new_location=None):
         #set walk to SCREEN COORDINATES
@@ -359,7 +364,10 @@ position: {8}'.format(
             if self.current_act_frame_index == self.current_act_animation_length:
                 self.current_act_animation_index = random.randint(0, self.current_act_number_of_animations - 1)
                 self.current_act_frame_index = 0
-        self.image = self.image_chains[self.current_act][self.current_act_animation_index][self.current_act_frame_index]
+        self.image = self.image_chains[self.current_act]\
+                                      [self.facing_direction]\
+                                      [self.current_act_animation_index]\
+                                      [self.current_act_frame_index]
       
         if self.current_act == 'walk':
             return self.update_walk(dt)
