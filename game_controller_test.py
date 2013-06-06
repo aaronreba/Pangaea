@@ -44,10 +44,10 @@ class controller(object):
                         self.model.add_player('Aaron', 'human')
                         self.model.add_actor(self.model.actor_id_counter, 'Doggy', 'dog', 'Aaron', 'human', (0, 0))
                         self.model.actors[-1].speed = 6
-                        self.model.actors[-1].add_ability(1, ability.heavy_strike)
-                        self.model.actors[-1].add_ability(2, ability.leaping_strike)
-                        self.model.actors[-1].add_ability(3, ability.long_strike)
-                        self.model.actors[-1].add_ability(4, ability.retreating_strike)
+                        self.model.add_ability(self.model.actors[-1], 1, ability.heavy_strike)
+                        self.model.add_ability(self.model.actors[-1], 2, ability.leaping_strike)
+                        self.model.add_ability(self.model.actors[-1], 3, ability.long_strike)
+                        self.model.add_ability(self.model.actors[-1], 4, ability.retreating_strike)
                         #self.model.add_actor('Doggy3', 'dog', 'Aaron', 'human', 0, 1)
                         #self.model.actors[-1].speed = 3
                     elif event.key == K_2:

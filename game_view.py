@@ -8,6 +8,8 @@ import common
 import constants
 import terraform
 
+import interface
+
 #display is imported from pygame/*
 
 class view(object):
@@ -41,6 +43,16 @@ class view(object):
         self.effect_sprite_group = pygame.sprite.Group()
         self.gui_group = pygame.sprite.Group()
         self.text_group = pygame.sprite.RenderUpdates()
+        
+        self.interface = interface.interface()
+        
+        for button in self.interface.all_buttons:
+            button_element = self.interface.all_buttons[button]
+            self.gui_group.add(button_element)
+    
+    ##########
+    # actors #
+    ##########
     
     def add_actor(self, new_actor):
         self.actor_images.load_images(new_actor.actor_type)
@@ -85,6 +97,20 @@ class view(object):
             new_screen_coordinates = self.screen_coordinates_from_map_position(new_position)
             actor.set_walk(new_screen_coordinates)
             actor.change_act('walk')
+    
+    def add_ability(self, number_slot, ability_object):
+        string_number = str(number_slot)
+        element = self.interface.all_buttons[string_number]
+        element.load_image(ability_object.image_name)
+    
+    def remove_ability(self, number_slot):
+        string_number = str(number_slot)
+        element = self.interface.all_buttons[string_number]
+        element.erase_image()
+    
+    ###############
+    # drawing map #
+    ###############
     
     def draw_map(self):
         if self.model.landscape == None:
@@ -257,8 +283,9 @@ class view(object):
         #self.centered_actor.rect.left -= shift_distance[0]
         #self.centered_actor.rect.top  -= shift_distance[1]
     
-    def draw_interface(self):
-        pass
+    ############
+    # draw all #
+    ############
     
     def draw(self):
         self.screen.blit(self.background, (0, 0))
@@ -269,6 +296,10 @@ class view(object):
         self.effect_sprite_group.draw(self.screen)
         self.gui_group.draw(self.screen)
         self.text_group.draw(self.screen)
+    
+    ##########
+    # update #
+    ##########
     
     def update(self, dt):
         #update animations

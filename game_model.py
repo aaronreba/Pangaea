@@ -281,6 +281,24 @@ class model(object):
         
         return moved
     
+    ###################
+    # actor abilities #
+    ###################
+    
+    def add_ability(self, actor, number_slot, ability_object):
+        #modify actor
+        actor.add_ability(number_slot, ability_object)
+        
+        #modify view
+        self.view.add_ability(number_slot, ability_object)
+    
+    def remove_ability(self, number_slot):
+        #modify actor
+        actor.remove_ability(number_slot)
+        
+        #modify view
+        self.view.remove_ability(number_slot)
+    
     def use_ability(self, direction, ability):
         offset_coordinates = common.get_coordinates_offset_from_direction(self.human_actor.position, direction)
         target_coordinates = (self.human_actor.position[0] + offset_coordinates[0],
