@@ -257,6 +257,9 @@ class view(object):
         #self.centered_actor.rect.left -= shift_distance[0]
         #self.centered_actor.rect.top  -= shift_distance[1]
     
+    def draw_interface(self):
+        pass
+    
     def draw(self):
         self.screen.blit(self.background, (0, 0))
         self.draw_map()

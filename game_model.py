@@ -76,6 +76,8 @@ class model(object):
         self.view.center_map(self.centered_actor)
         self.view.place_actors()
         
+        self.view.draw_interface()
+        
         self.initialized = True
     
     ###################
@@ -259,7 +261,7 @@ class model(object):
             # update view #
             ###############
             
-            if not (dx == dy == 0):
+            if direction != -1:
                 self.current_actor.change_direction(direction)
             
             if map_changed:
