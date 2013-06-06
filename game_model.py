@@ -203,11 +203,14 @@ class model(object):
         for each_actor in self.actors[:-1]:
             each_actor.speed_time = int(each_actor.speed_time * self.speed_lcm)
     
-    def kill_actor(self, kill_me):
+    def remove_actor(self, remove_me):
         #remove from tile and model actor list
-        self.remove_actor_by_id(kill_me.id_number)
-        self.landscape.landscape[kill_me.position].occupied = False
-        self.landscape.landscape[kill_me.position].actors.pop()
+        self.remove_actor_by_id(remove_me.id_number)
+        self.landscape.landscape[remove_me.position].occupied = False
+        self.landscape.landscape[remove_me.position].actors.pop()
+        
+        #remove from view
+        self.view.remove_actor(remove_me)
     
     ##########################
     # modifying player/actor #
@@ -290,7 +293,7 @@ class model(object):
             target_actor.modify_health(damage)
             
             if target_actor.current_health <= 0:
-                self.kill_actor(target_actor)
+                self.remove_actor(target_actor)
             
             self.next_turn()
             return True

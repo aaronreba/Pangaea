@@ -7,7 +7,7 @@ from math import ceil
 import random
 
 import common
-
+import ability
 import ai
 
 MS_PER_FRAME = 100
@@ -88,11 +88,13 @@ class actor(pygame.sprite.Sprite):
         
         self.equipment['neck'] = None
         
-        ##########
-        # skills #
-        ##########
+        #############
+        # abilities #
+        #############
         
-        self.skills = {}
+        self.abilities = {}
+        for i in xrange(1, 10):
+            self.abilities[i] = None
         
         ######
         # ai #
@@ -264,6 +266,24 @@ position: {8}'.format(
         damage_value += random_modifier
         damage_value = round(damage_value)
         return int(damage_value)
+    
+    #############
+    # abilities #
+    #############
+    
+    def add_ability(self, number_slot, ability_object):
+        previous_ability = self.abilities[number_slot]
+        self.abilities[number_slot] = ability_object
+        return previous_ability
+    
+    def remove_ability(self, number_slot):
+        previous_ability = self.abilities[number_slot]
+        self.abilities[number_slot] = None
+        return previous_ability
+    
+    ##################
+    # view functions #
+    ##################
     
     def initialize_sprite(self, group):
         pygame.sprite.Sprite.__init__(self, group)
