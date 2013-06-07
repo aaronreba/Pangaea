@@ -206,8 +206,11 @@ class model(object):
     def remove_actor(self, remove_me):
         #remove from tile and model actor list
         self.remove_actor_by_id(remove_me.id_number)
-        self.landscape.landscape[remove_me.position].occupied = False
-        self.landscape.landscape[remove_me.position].actors.pop()
+        
+        #map may have shrank after actor went off map
+        if remove_me.position in self.landscape.landscape:
+            self.landscape.landscape[remove_me.position].occupied = False
+            self.landscape.landscape[remove_me.position].actors.pop()
         
         #remove from view
         self.view.remove_actor(remove_me)
