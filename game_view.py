@@ -45,10 +45,6 @@ class view(object):
         self.text_group = pygame.sprite.RenderUpdates()
         
         self.interface = interface.interface()
-        
-        for button in self.interface.all_buttons:
-            button_element = self.interface.all_buttons[button]
-            self.gui_group.add(button_element)
     
     ##########
     # actors #
@@ -107,6 +103,14 @@ class view(object):
         string_number = str(number_slot)
         element = self.interface.all_buttons[string_number]
         element.erase_image()
+    
+    #############
+    # interface #
+    #############
+    def initialize_interface(self):
+        for button in self.interface.all_buttons:
+            button_element = self.interface.all_buttons[button]
+            self.gui_group.add(button_element)
     
     ###############
     # drawing map #

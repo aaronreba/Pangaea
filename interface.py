@@ -55,7 +55,7 @@ class interface():
         all_buttons['8'] = self.ability_8
         all_buttons['9'] = self.ability_9
         self.all_buttons = all_buttons
-
+    
 class element(pygame.sprite.Sprite):
     def __init__(self):
         #inherited from Sprite, position on screen

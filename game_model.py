@@ -76,7 +76,7 @@ class model(object):
         self.view.center_map(self.centered_actor)
         self.view.place_actors()
         
-        self.view.draw_interface()
+        self.view.initialize_interface()
         
         self.initialized = True
     

@@ -26,6 +26,7 @@ class states(object):
         self.screen.fill((0, 0, 0, 255), special_flags=pygame.BLEND_RGBA_MAX)
         
         if self.current_state == 'main_menu':
+            #make individual game_menu.view
             self.view = game_view.view(self.screen, display)
             self.model = game_model.model(self.view)
             self.controller = main_menu.controller(self.model, pygame.event)
