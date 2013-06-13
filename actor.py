@@ -3,6 +3,7 @@ from __future__ import division
 import pygame
 from math import sqrt
 from math import ceil
+from math import floor
 
 import random
 
@@ -122,9 +123,12 @@ class actor(pygame.sprite.Sprite):
         self.rect = None #inherited from Sprite, position on screen
         self.image = None #inherited from Sprite
         
-        self.decimal_rect = (0, 0) #holds decimals that pygame's rect destroys
+        #holds absolute decimal location of actor
+        self.true_decimal_rect = [0, 0]
+        #holds decimals that pygame's rect destroys
+        self.decimal_rect = [0, 0]
         
-        # self.visible = False
+        #self.visible = False
         
         #this is for the view displaying something walking
         self.walking_speed = 200 #value in pixels
@@ -326,17 +330,17 @@ position: {8}'.format(
     
     def set_walk(self, new_location=None):
         #set walk to SCREEN COORDINATES
-        current_actor_coordinates = (self.rect[0] + self.decimal_rect[0],
-                                     self.rect[1] + self.decimal_rect[1])
+        #current_actor_coordinates = (self.rect[0] + self.decimal_rect[0],
+        #                             self.rect[1] + self.decimal_rect[1])
+        
+        current_actor_coordinates = self.true_decimal_rect
+        
         if new_location == None:
             new_location = self.walking_destination
         
-        move_x = new_location[0] - current_actor_coordinates[0]
-        move_y = new_location[1] - current_actor_coordinates[1]
-        
         self.walking_destination = new_location
-        self.walking_destination = (int(self.walking_destination[0]),
-                                    int(self.walking_destination[1]))
+        #self.walking_destination = (int(self.walking_destination[0]),
+        #                            int(self.walking_destination[1]))
         
         self.walking_vector = common.vector_to_pos(current_actor_coordinates,
                                                    new_location,
@@ -407,52 +411,81 @@ position: {8}'.format(
         movex = vx * dt
         movey = vy * dt
         
+        old_rect = list(self.true_decimal_rect)
+        
+        self.true_decimal_rect[0] += movex
+        self.true_decimal_rect[1] += movey
+        
         self.decimal_rect[0] += movex
         self.decimal_rect[1] += movey
         
+        move_image_by = [0, 0]
+        
         if bx:
-            int_decimal_rect_x = int(self.decimal_rect[0])
+            move_image_by[0] = floor(self.decimal_rect[0])
         else:
-            int_decimal_rect_x = ceil(self.decimal_rect[0])
+            move_image_by[0] = ceil(self.decimal_rect[0])
         
         if by:
-            int_decimal_rect_y = int(self.decimal_rect[1])
+            move_image_by[1] = floor(self.decimal_rect[1])
         else:
-            int_decimal_rect_y = ceil(self.decimal_rect[1])
+            move_image_by[1] = ceil(self.decimal_rect[1])
         
-        self.decimal_rect[0] -= int_decimal_rect_x
-        self.decimal_rect[1] -= int_decimal_rect_y
+        self.decimal_rect[0] -= move_image_by[0]
+        self.decimal_rect[1] -= move_image_by[1]
         
-        self.rect.move_ip(int_decimal_rect_x,
-                          int_decimal_rect_y)
+        self.rect.move_ip(move_image_by[0],
+                          move_image_by[1])
         
         rectx = self.rect[0]
         recty = self.rect[1]
         
+        #recalculate velocities if destination on one dimension (x or y)
+        #has been reached
         recalculate = False
+        
+        #traveled distance
+        traveled = [0, 0]
         
         if bx:
             if rectx > destx:
                 self.rect.left = destx
+                self.true_decimal_rect[0] = destx
                 recalculate = True
+                traveled[0] = destx - old_rect[0]
+            else:
+                traveled[0] = movex
         else:
             if rectx < destx:
                 self.rect.left = destx
+                self.true_decimal_rect[0] = destx
                 recalculate = True
+                traveled[0] = destx - old_rect[0]
+            else:
+                traveled[0] = movex
         
         if by:
             if recty > desty:
                 self.rect.top = desty
+                self.true_decimal_rect[1] = desty
                 recalculate = True
+                traveled[1] = desty - old_rect[1]
+            else:
+                traveled[1] = movey
         else:
             if recty < desty:
                 self.rect.top = desty
+                self.true_decimal_rect[1] = desty
                 recalculate = True
+                traveled[1] = desty - old_rect[1]
+            else:
+                traveled[1] = movey
         
         if self.rect.left == destx and self.rect.top == desty:
             self.change_act('stand')
         elif recalculate:
             self.set_walk()
         
-        return (int_decimal_rect_x, int_decimal_rect_y)
+        #return (int_decimal_rect_x, int_decimal_rect_y)
+        return traveled
 

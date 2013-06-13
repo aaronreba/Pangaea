@@ -75,9 +75,12 @@ class view(object):
         #place actor at its previous position if it was walking
         if actor.current_act == 'walk':
             if actor == self.centered_actor:
+                #distance_to_destination =\
+                #    (actor.walking_destination[0] - actor.rect.left,
+                #     actor.walking_destination[1] - actor.rect.top)
                 distance_to_destination =\
-                    (actor.walking_destination[0] - actor.rect.left,
-                     actor.walking_destination[1] - actor.rect.top)
+                    (actor.walking_destination[0] - actor.true_decimal_rect[0],
+                     actor.walking_destination[1] - actor.true_decimal_rect[1])
                 #print distance_to_destination
                 #shift universe by distance
                 self.shift_universe(distance_to_destination)
@@ -171,9 +174,11 @@ class view(object):
             stagger_offset = self.tile_odd_offset
         
         #move actor's image rect to center
-        old_rect = self.centered_actor.rect
+        #old_rect = self.centered_actor.rect
         self.centered_actor.rect.left = half_screen_x - half_tile_x
         self.centered_actor.rect.top = half_screen_y - half_tile_y
+        self.centered_actor.true_decimal_rect = [half_screen_x - half_tile_x,
+                                                 half_screen_y - half_tile_y]
         
         #calculate terrain offset given actor's position
         centered_actor_offset = (half_screen_x - half_tile_x - tile_offset_x - stagger_offset,
@@ -251,6 +256,7 @@ class view(object):
             
             each_actor.rect.left = screen_coordinates[0]
             each_actor.rect.top = screen_coordinates[1]
+            each_actor.true_decimal_rect = list(screen_coordinates)
     
     def screen_offset_from_map_direction(self, old_map_bounds, new_map_bounds):
         map_change_direction = (old_map_bounds[0][0] - new_map_bounds[0][0],
@@ -263,6 +269,8 @@ class view(object):
         #move actor's rect, and its destinations
         displace_me.rect.left += screen_change_direction[0]
         displace_me.rect.top += screen_change_direction[1]
+        displace_me.true_decimal_rect = [displace_me.true_decimal_rect[0] + screen_change_direction[0],
+                                         displace_me.true_decimal_rect[1] + screen_change_direction[1]]
         
         old_walking_destination = displace_me.walking_destination
         displace_me.walking_destination = (old_walking_destination[0] + screen_change_direction[0],
@@ -282,6 +290,8 @@ class view(object):
                                               each_actor.walking_destination[1] - shift_distance[1])
             each_actor.rect.left = each_actor.rect.left - shift_distance[0]
             each_actor.rect.top = each_actor.rect.top - shift_distance[1]
+            each_actor.true_decimal_rect = [each_actor.true_decimal_rect[0] - shift_distance[0],
+                                            each_actor.true_decimal_rect[1] - shift_distance[1]]
         
         ##move center actor itself
         #self.centered_actor.rect.left -= shift_distance[0]
